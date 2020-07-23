@@ -1,4 +1,4 @@
-# Snippets
+# Takakiri's Snippets
 
 Snippets are versioned here.
 

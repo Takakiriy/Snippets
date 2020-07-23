@@ -52,7 +52,7 @@ echo "Skipped"  ;fi
 
 
 	#// Install Node.js
-	#// The code master is in "programming\スクリプト\JavaScrpt\JavaScript.files\Node_js\install_Node_js.sh"
+	#// 2020-07-23 にコミット d0aa968 の "Snippets\for-bash\installer\Node_js\install_Node_js.sh" と同期済み
 	if [ ! -e "${NODE_HOME}" ]; then
 
 		#// Guard

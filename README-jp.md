@@ -1,6 +1,6 @@
 ﻿Character Encoding: "WHITE SQUARE" U+25A1 is □.
 
-# スニペット
+# Takakiri 作成スニペット
 
 スニペットのバージョン管理をここで行っています。
 
