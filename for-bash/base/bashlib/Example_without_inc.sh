@@ -1159,6 +1159,16 @@ function  UnescapeJSON_func()
 
 
 #********************************************************************
+# Function: ToLF_func
+#    convert from CR+LF(stdin) to LF(stdout)
+#********************************************************************
+function  ToLF_func()
+{
+	tr -d \\r
+}
+
+
+#********************************************************************
 # Function: parseJSON_func
 #    Parse JSON
 #
@@ -1170,7 +1180,7 @@ function  UnescapeJSON_func()
 #********************************************************************
 function  parseJSON_func()
 {
-	PARSRJ_SH_func  $*
+	ToLF_func  |  PARSRJ_SH_func  $*
 }
 
 
