@@ -170,10 +170,10 @@ function  SetUpVariables_func()
 
 	#// Set Node.js variables
 	if IsWindows_func; then
-		export  g_Node_js_Installer="node-v${g_Node_js_Version}-x64.msi"
+		export  g_Node_js_Installer="${USERPROFILE}\Downloads\node-v${g_Node_js_Version}-x64.msi"
 	else
-		export  g_Node_js_Installer="node-v${g_Node_js_Version}-linux-x64.tar.xz"
-		export g_Node_js_FolderName="node-v${g_Node_js_Version}-linux-x64"
+		export  g_Node_js_Installer="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64.tar.xz"
+		export g_Node_js_FolderName="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64"
 	fi
 	if IsWindows_func; then
 		export  HOME="/c/Users/${USERNAME}"
