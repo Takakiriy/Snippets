@@ -117,6 +117,9 @@ function  Install_Node_js_func()
 			EchoNextCommand_func
 
 			msiexec.exe -i "${g_Node_js_Installer}" -qr
+			EchoNextCommand_func
+
+			npm config set script-shell  "C:\\Program Files\\Git\\usr\\bin\\bash.exe"
 		else
 			EchoNextCommand_func
 
@@ -317,10 +320,11 @@ function  EchoNextTrap_func()
 	local  command="$2"
 	shift  2
 	g_PipeStatus=( "$@" )
+	local  escaped_command="$( echo "$command" | sed -e "s/>/\\\\>/" )"
 
 	echo "${line_num}: \$ ${command}" >&2
-	case ${command} in *\$*)
-		echo  "$(eval echo ${line_num}: \$ ${command})" >&2;;
+	case "${command}" in *\$*)
+		echo  "$(eval echo ${line_num}: \$ ${escaped_command})" >&2;;
 	esac
 
 	g_DebugTrapFunc=""
@@ -521,6 +525,7 @@ function  ErrTrap_func()
 			ErrClass.getCallTree_method  "$g_Err_LineNo"  2  1
 			#// g_Err_ErrCallStack="$a1$g_ReturnValue$LF"
 			g_Err_ErrCallStack="$g_ReturnValue$LF"
+			g_ExitStatus=1
 		else
 			echo  "<ERROR msg=\"エラー処理中に別のエラーが発生しました。\"/>" >&2
 
@@ -1116,6 +1121,16 @@ function  StepRunning_func()
 
 
 #********************************************************************
+# Function: ToLF_func
+#    convert from CR+LF(stdin) to LF(stdout)
+#********************************************************************
+function  ToLF_func()
+{
+	tr -d \\r
+}
+
+
+#********************************************************************
 # Function: parseJSON_func
 #    Parse JSON
 #
@@ -1127,7 +1142,7 @@ function  StepRunning_func()
 #********************************************************************
 function  parseJSON_func()
 {
-	PARSRJ_SH_func  $*
+	ToLF_func  |  PARSRJ_SH_func  $*
 }
 
 
