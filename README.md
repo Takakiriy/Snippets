@@ -13,4 +13,4 @@ Snippets are versioned here.
 			- [base](for-bash\installer\VisualStudioCode\base\install_VisualStudioCode.sh)
 			- [+ TypeScript](for-bash\installer\VisualStudioCode\TypeScript\install_TypeScript_VSCode.sh)
 
-This has been synchronizeded with "README-jp.md" in 2020-07-23.
+This has been synchronized with "README-jp.md" in 2020-07-23.

@@ -12,7 +12,7 @@ set -eE
 #// Setting
 #//==================================================================
 
-export  g_Node_js_Version="10.16.1"
+export  g_Node_js_Version="12.18.3"
 #//==================================================================
 
 
@@ -52,31 +52,10 @@ echo "Skipped"  ;fi
 
 
 	#// Install Node.js
-	#// 2020-07-23 にコミット d0aa968 の "Snippets\for-bash\installer\Node_js\install_Node_js.sh" と同期済み
-	if [ ! -e "${NODE_HOME}" ]; then
-
-		#// Guard
-		if [ ! -e "${g_Node_js_Installer}" ]; then
-			echo  ""
-			echo  "Download Node.js installer and copy it to this folder."
-			echo  "https://nodejs.org/ja/download/releases/ or https://nodejs.org/en/download/"
-			echo  "Node.js ${g_Node_js_Version} \"${g_Node_js_Installer}\""
-			echo  ""
-			Error_func  "Not found Node.js ${g_Node_js_Version} in ${NODE_HOME}."
-		fi
+	Install_Node_js_func
 
 
-		#// Install Node.js
-		echo  ""
-		ColorEcho_func  "Install Node.js ...\n"  "Green"
-		if IsWindows_func; then
-			msiexec.exe  -i "${g_Node_js_Installer}" -qr
-		else
-			EchoNextCommand_func
-
-			tar Jxfv  "${g_Node_js_Installer}" > /dev/null
-		fi
-	fi
+	#// Show versions
 	EchoNextCommand_func
 
 	node --version
@@ -87,30 +66,136 @@ echo "Skipped"  ;fi
 
 
 #********************************************************************
+# Function: CleanUp_func
+#********************************************************************
+function  CleanUp_func()
+{
+	SetUpVariables_func
+
+
+	#// Skip
+if false; then #// "Skipped"
+echo "Skipped"  ;fi
+
+
+	#// Uninstall Node.js
+	Uninstall_Node_js_func
+}
+
+
+#********************************************************************
+# Function: Install_Node_js_func
+#    Install Node.js
+#
+# Description:
+#    This was synchronized with "Snippets\for-bash\installer\Node_js\install_Node_js.sh" in 2020-07-24 commit next to 7e8ecdf.
+#********************************************************************
+function  Install_Node_js_func()
+{
+	if [ ! -e "${NODE_HOME}/npm" ]; then
+
+		#// Guard
+		if [ ! -e "${g_Node_js_Installer}" ]; then
+			echo  ""
+			echo  "Download Node.js installer and copy it to this folder."
+			echo  "https://nodejs.org/ja/download/releases/ or https://nodejs.org/en/download/"
+			echo  "Node.js ${g_Node_js_Version} \"${g_Node_js_Installer}\""
+			echo  ""
+			Error_func  "Not found Node.js ${g_Node_js_Version} installer at ./${g_Node_js_Installer}"
+		fi
+
+
+		#// Install Node.js
+		echo  ""
+		ColorEcho_func  "Install Node.js ...\n"  "Green"
+		if IsWindows_func; then
+
+			Clear_Node_js_func
+			EchoNextCommand_func
+
+			echo  "prefix=${g_NodePrefixForWindows}" > "${HOME}\.npmrc"  #// npm set prefix
+			EchoNextCommand_func
+
+			msiexec.exe -i "${g_Node_js_Installer}" -qr
+		else
+			EchoNextCommand_func
+
+			tar Jxfv  "${g_Node_js_Installer}" > /dev/null
+		fi
+	fi
+}
+
+
+#********************************************************************
+# Function: Uninstall_Node_js_func
+#********************************************************************
+function  Uninstall_Node_js_func()
+{
+	if [ -e "${NODE_HOME}/npm" ]; then
+		EchoNextCommand_func
+
+		msiexec.exe -x  "${g_Node_js_Installer}" -qr
+	fi
+
+	Clear_Node_js_func
+}
+
+
+#********************************************************************
+# Function: Clear_Node_js_func
+#********************************************************************
+function  Clear_Node_js_func()
+{
+	EchoNextCommand_func
+
+	rm -rf  "${HOME}\AppData\Roaming\npm-cache"  #// npm cache clean --force
+	EchoNextCommand_func
+
+	rm -rf  "${HOME}\AppData\Roaming\npm"
+	EchoNextCommand_func
+
+	rm -f  "${HOME}\.npmrc"  #// npm set prefix
+}
+
+
+#********************************************************************
 # Function: SetUpVariables_func
 #********************************************************************
 function  SetUpVariables_func()
 {
 	export  g_ParentPathOfThisScript="$( pwd )"
+
+	#// Set Node.js variables
 	if IsWindows_func; then
 		export  g_Node_js_Installer="node-v${g_Node_js_Version}-x64.msi"
 	else
 		export  g_Node_js_Installer="node-v${g_Node_js_Version}-linux-x64.tar.xz"
+		export g_Node_js_FolderName="node-v${g_Node_js_Version}-linux-x64"
 	fi
-	export  g_Node_js_FolderName="node-v${g_Node_js_Version}-linux-x64"
 	if IsWindows_func; then
-		NODE_HOME="/c/Program Files/nodejs"
+		export  HOME="/c/Users/${USERNAME}"
+		export  NODE_HOME="/c/Program Files/nodejs"
+		export  NODE_PATH="${NODE_HOME}/node_modules/npm/node_modules"
+		export  g_NodePrefix="${HOME}/AppData/Roaming/npm"
+		export  g_NodePrefixForWindows="${USERPROFILE}\AppData\Roaming\npm"
 	else
-		NODE_HOME="${g_ParentPathOfThisScript}/${g_Node_js_FolderName}"
+		export  NODE_HOME="${g_ParentPathOfThisScript}/${g_Node_js_FolderName}"
+		export  NODE_PATH="${NODE_HOME}/lib/node_modules"
+		export  g_NodePrefix="${NODE_HOME}/lib"
 	fi
 
-	echo  ""
-	echo  "NODE_HOME = ${NODE_HOME}"
-	EchoNextCommand_func
-	export  NODE_PATH="${NODE_HOME}/lib/node_modules"
-	export  g_PathOfCDK="${NODE_PATH}/aws-cdk/bin"
-	EchoNextCommand_func
-	export  PATH="$PATH:${g_PathOfCDK}:${NODE_HOME}/bin:${NODE_PATH}/.bin"
+	export  g_PathOfCDK="${g_NodePrefix}/node_modules/aws-cdk/bin"
+
+	#// Set PATH variable
+	if IsWindows_func; then
+		export  PATH="$PATH:${g_NodePrefix}:/c/Program Files/nodejs:${NODE_HOME}/node_modules/npm/bin"
+	else
+		export  PATH="$PATH:${g_PathOfCDK}:${NODE_HOME}/bin:${NODE_PATH}/.bin"
+	fi
+
+	#// Show variables
+	ShowVariables_func
+	echo  "g_NodePrefix = ${g_NodePrefix}"
 }
 
 
