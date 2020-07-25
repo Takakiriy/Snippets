@@ -2,17 +2,19 @@ import * as cmd from "../my-cmd.js"
 import * as lib from "../my-lib.js"
 const httpOrigin = Cypress.env('HttpOrigin')
 
-describe('None', () => {
-	before(() => {
-		cmd.restoreLogInLocalStorage()
+describe('Automatic log in and click hyper link', () => {
+	beforeEach(() => {
+		cmd.restoreLogInToken()
 		cmd.visitSync( httpOrigin )
 	})
 
 	it( 'a', () => {
-		cy.log("1",1)
+		cy.get('[id="webAPIURL"]').click()
+		cy.go('back')
 	})
 
 	it( 'b', () => {
-		cy.log("2",1)
+		cy.get('[id="webAPIURLMy"]').click()
+		cy.go('back')
 	})
 })

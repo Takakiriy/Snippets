@@ -1,4 +1,4 @@
-// Functions having cypress commands
+﻿// Functions having cypress commands
 import * as lib from "./my-lib.js"
 
 export function  visitSync( targetURL, watiForURL, option ) {
@@ -21,14 +21,48 @@ export function  log( label,  value ) {
 	}
 }
 
-// saveCookies
-Cypress.Commands.add("saveCookies", ( path: string ) => {
-	cy.getCookies().then((cookies) => {
+// saveLogInToken
+export function  saveLogInToken() {
+	if ( Cypress.env( 'TokenInCookie' )) {
+		saveLogInCookie()
+	} else {
+		saveLogInLocalStorage()
+	}
+}
 
-		cy.writeFile("_cookie.json", cookies)
-			// cypress ���N�������Ƃ��̃J�����g �t�H���_�[����̑��΃p�X
+// restoreLogInToken
+export function  restoreLogInToken() {
+	if ( Cypress.env( 'TokenInCookie' )) {
+		restoreLogInCookie()
+	} else {
+		restoreLogInLocalStorage()
+	}
+}
+
+// saveLogInCookie
+export function  saveLogInCookie() {
+	cy.getCookies().then((cookies) => {
+		cy.writeFile("_logInCookie.json", cookies)  //jp: cypress を起動したときのカレント フォルダーからの相対パス
 	})
-})
+}
+
+// restoreLogInCookie
+export function  restoreLogInCookie() {
+	cy.clearCookies()
+	cy.readFile("_logInCookie.json").then( (cookies) => {  //jp: cypress を起動したときのカレント フォルダーからの相対パス
+	log("cookies", cookies )
+		for (const cookie of cookies ) {
+
+			cy.setCookie(cookie.name, cookie.value, {
+				path:     cookie.path,
+				// domain:   cookie.domain,  //jp: これを指定すると設定されない
+				secure:   cookie.secure,
+				httpOnly: cookie.httpOnly,
+				expiry:   cookie.expiry,
+			})
+		}
+	})
+}
 
 // saveLogInLocalStorage
 // Example: cmd.saveLogInLocalStorage()
@@ -40,7 +74,7 @@ export function  saveLogInLocalStorage() {
 // Example: cmd.restoreLogInLocalStorage()
 export function  restoreLogInLocalStorage() {
 	cy.clearLocalStorage()
-	cy.readFile("_logInLocalStorage.json").then( (storage) => {  // cypress ���N�������Ƃ��̃J�����g �t�H���_�[����̑��΃p�X
+	cy.readFile("_logInLocalStorage.json").then( (storage) => {  //jp: cypress を起動したときのカレント フォルダーからの相対パス
 		setLocalStorage( storage )
 	})
 })

@@ -9,6 +9,7 @@ describe('Location', () => {
 		// Example:
 		//    {
 		//        "HttpOrigin": "http://localhost:8080/",
+		//        "TokenInCookie": false,
 		//        "LogInAccount": "tester",
 		//        "LogInPassword": "123456"
 		//    }
@@ -29,7 +30,7 @@ describe('Location', () => {
 		cy.get('[data-test="sign-in-password-input"]').type(Cypress.env( 'LogInPassword' )+`{enter}`)
 
 		cy.location('href').should('eq', httpOrigin).then( (href)=>{
-			cmd.saveLogInLocalStorage()
+			cmd.saveLogInToken()
 		})
 	})
 })
