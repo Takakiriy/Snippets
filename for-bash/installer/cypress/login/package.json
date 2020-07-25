@@ -1,0 +1,17 @@
+{
+    "name": "TypeScript",
+    "version": "0.0.1",
+    "description": "",
+    "scripts": {},
+    "author": "",
+    "license": "ISC",
+    "private": false,
+    "devDependencies": {
+        "@types/node": "^13.13.4",
+        "cypress": "^4.10.0",
+        "typescript": "^3.7.2"
+    },
+    "dependencies": {
+        "iconv-lite": "^0.5.1"
+    }
+}
