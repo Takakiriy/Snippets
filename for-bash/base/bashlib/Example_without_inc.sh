@@ -12,6 +12,8 @@ set -eE
 #// Setting
 #//==================================================================
 
+export  g_DependenciesTitle="test_application"
+export  g_Dependencies=( "Node.js" "npm-check-updates" )
 #//==================================================================
 
 
@@ -496,6 +498,115 @@ function  CheckArgCount_func()
 		str="$str コマンドライン: ${FUNCNAME[1]} ${Arguments[@]}"
 		Error_func  "$str"
 	fi
+}
+
+
+#*********************************************************************
+# Function: AddDependencies_func
+#
+# Arguments:
+#    in_Title        - The name of the owner module
+#    in_Dependencies - An array of target module names without spaces
+#
+# Return Value:
+#    None
+#
+# Example:
+#    > AddDependencies_func  "${g_DependenciesTitle}"  "${g_Dependencies[@]}"
+#*********************************************************************
+function  AddDependencies_func()
+{
+	local  in_Title="$1"
+	shift
+	local  in_Dependencies=( $* )
+
+	rm -f  "${HOME}/.dependencies/${in_Title}.txt"
+	for  module  in  "${in_Dependencies[@]}" ;do
+		echo  "${module}" >> "${HOME}/.dependencies/${in_Title}.txt"
+	done
+}
+
+
+#*********************************************************************
+# Function: GetSharedDependencies_func
+#
+# Arguments:
+#    in_Title        - The name of the owner module
+#    in_Dependencies - An array of target module names
+#
+# Return Value:
+#    g_SharedDependencies - An associative array of target module names shared with others
+#
+# Example:
+#    > GetSharedDependencies_func  "${g_DependenciesTitle}"  "${g_Dependencies[@]}"  #// g_SharedDependencies = .
+#    > if [ -v g_SharedDependencies["Node.js"] ]; then
+#    > if [ ! -v ... ]; then  #// if not shared
+#*********************************************************************
+function  GetSharedDependencies_func()
+{
+	local  in_Title="$1"
+	shift
+	local  in_Dependencies=( $* )
+	local -A  dependencies
+	for  module  in  "${in_Dependencies[@]}"; do
+		dependencies[${module}]="dummy"
+	done
+	g_SharedDependencies=()
+
+	#// Set the key of "g_SharedDependencies" associative array to the name of the module in the file
+	#// "${HOME}/.dependencies" folder of the elements of "in_Dependencies" array.
+	#jp:// in_Dependencies 配列の要素のうち、${HOME}/.dependencies フォルダーにあるファイルの中に書かれている
+	#jp:// モジュール名を g_SharedDependencies 連想配列のキーに設定します。
+	local  file_paths=( $(find  "${HOME}/.dependencies") )
+
+	for  file_path  in  "${file_paths[@]}"; do
+		local  is_other_file=${False}
+		if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
+			if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
+				is_other_file=${True}
+			fi
+		fi
+		if [ ${is_other_file} == ${True} ]; then
+			local  line
+			local  modules_in_other_files=()
+			while read  line; do
+				modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
+			done < <( cat "${file_path}" )
+
+			for  module  in  "${modules_in_other_files[@]}" ;do
+				local  dependencies_has_the_module=${False}
+				if [ -v dependencies[${module}] ];then
+					dependencies_has_the_module=${True}
+				fi
+				local  is_shared=${dependencies_has_the_module}
+
+				if [ ${is_shared} == ${True} ]; then
+					g_SharedDependencies[${module}]="dummy"
+				fi
+			done
+		fi
+	done
+}
+declare -A  g_SharedDependencies
+
+
+#*********************************************************************
+# Function: RemoveDependencies_func
+#
+# Arguments:
+#    in_Title - The name of the owner module
+#
+# Return Value:
+#    None
+#
+# Example:
+#    > RemoveDependencies_func  "${g_DependenciesTitle}"
+#*********************************************************************
+function  RemoveDependencies_func()
+{
+	local  in_Title="$1"
+
+	rm -f  "${HOME}/.dependencies/${in_Title}.txt"
 }
 
 
