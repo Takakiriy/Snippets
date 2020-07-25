@@ -50,7 +50,6 @@ export function  saveLogInCookie() {
 export function  restoreLogInCookie() {
 	cy.clearCookies()
 	cy.readFile("_logInCookie.json").then( (cookies) => {  //jp: cypress を起動したときのカレント フォルダーからの相対パス
-	log("cookies", cookies )
 		for (const cookie of cookies ) {
 
 			cy.setCookie(cookie.name, cookie.value, {
