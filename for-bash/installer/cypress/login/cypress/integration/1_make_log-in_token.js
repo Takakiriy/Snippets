@@ -9,7 +9,7 @@ describe('Location', () => {
 		// Example:
 		//    {
 		//        "HttpOrigin": "http://localhost:8080/",
-		//        "TokenInCookie": false,
+		//        "LogInToken": "InCookie",  // "InCookie" or "InLocalStorage"
 		//        "LogInAccount": "tester",
 		//        "LogInPassword": "123456"
 		//    }

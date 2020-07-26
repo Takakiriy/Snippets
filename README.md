@@ -4,6 +4,8 @@ Snippets are versioned here.
 
 [ English | [Japanese](README-jp.md) ]
 
+## List
+
 - for-bash
 	- base
 		- [bashlib](for-bash/base/bashlib/Example_without_inc.sh) - A basic part of the bash shell script file that also allows for efficient debugging
@@ -17,4 +19,22 @@ Snippets are versioned here.
 			- [base](for-bash/installer/VisualStudioCode/base/install_VisualStudioCode.sh)
 			- [+ TypeScript](for-bash/installer/VisualStudioCode/TypeScript/install_TypeScript_VSCode.sh)
 
-This was synchronized with "README-jp.md" in 2020-07-26 commit next to 0f03bdf.
+
+## How to install (Windows)
+
+1. Install Git bash.
+	- https://git-scm.com/downloads
+	- Example of downloading installer file name: `Git-2.27.0-64-bit.exe`
+	- bash must be installed. Other settings are optional
+2. Place Node.js package under `${USERPROFILE}\Downloads` folder.
+	- https://nodejs.org/ja/download/
+	- Example of downloading installer file name: `node-v12.18.3-x64.msi`
+	- The version of Node.js is the value of the `g_Node_js_Version` variable
+		in the shell script to be executed later
+	- Some shell scripts need to be placed in the location indicated by the error message when they are run
+3. Open bash and run one of the shell scripts in the Takakiri&apos;s snippet.
+	- Shell script file has .sh extension
+	- To launch bash, right-click on a folder and select **Git Bash Here**
+	- Type `./__FileName__.sh` (Enter) to run the shell script
+
+This was synchronized with "README-jp.md" in 2020-07-26 commit next to 79d12be7.

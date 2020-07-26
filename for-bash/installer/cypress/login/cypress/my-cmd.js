@@ -23,7 +23,7 @@ export function  log( label,  value ) {
 
 // saveLogInToken
 export function  saveLogInToken() {
-	if ( Cypress.env( 'TokenInCookie' )) {
+	if ( Cypress.env( 'LogInToken' ) == 'InCookie' ) {
 		saveLogInCookie()
 	} else {
 		saveLogInLocalStorage()
@@ -32,7 +32,7 @@ export function  saveLogInToken() {
 
 // restoreLogInToken
 export function  restoreLogInToken() {
-	if ( Cypress.env( 'TokenInCookie' )) {
+	if ( Cypress.env( 'LogInToken' ) == 'InCookie' ) {
 		restoreLogInCookie()
 	} else {
 		restoreLogInLocalStorage()
