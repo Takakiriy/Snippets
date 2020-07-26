@@ -16,7 +16,7 @@
 	- `LogInToken` はログインのトークンがある場所。 値は、`"InCookie"` または `"InLocalStorage"`
 		- aws Amplify 環境なら、Amplify.configure に渡す引数の Auth/cookieStorage の有無に合わせます
 	- `LogInAccount` と `LogInPassword` にはサインアップしたアカウントを設定してください
-4. bash を開いて、１つの シェル スクリプト を実行します。
+4. bash を開いて、シェル スクリプト を実行します。
 	- 拡張子が .sh のファイルが シェル スクリプト です
 	- フォルダーを右クリックして **Git Bash Here** を選ぶと bash が起動します
 	- `./install_Cypress.sh` (Enter) と入力すると シェル スクリプト を実行します

@@ -519,8 +519,11 @@ function  AddDependencies_func()
 	local  in_Title="$1"
 	shift
 	local  in_Dependencies=( $* )
-
+	if [ ! -e "${HOME}/.dependencies" ]; then
+		mkdir  "${HOME}/.dependencies"
+	fi
 	rm -f  "${HOME}/.dependencies/${in_Title}.txt"
+
 	for  module  in  "${in_Dependencies[@]}" ;do
 		echo  "${module}" >> "${HOME}/.dependencies/${in_Title}.txt"
 	done

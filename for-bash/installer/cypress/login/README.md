@@ -15,7 +15,7 @@
 	- `LogInToken` is where the log-in token is located. The value is `"InCookie"` or `"InLocalStorage"`
 		- In aws Amplify environment, match the presence or absence of `Auth/cookieStorage` in the argument to pass to `Amplify.configure`
 	- `LogInAccount` and `LogInPassword` are the account and the password you signed up
-4. Open bash and run one of the shell scripts.
+4. Open bash and run the shell script.
 	- Shell script file has .sh extension
 	- To launch bash, right-click on a folder and select **Git Bash Here**
 	- Type `./install_Cypress.sh` (Enter) to run the shell script
