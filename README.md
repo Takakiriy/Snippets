@@ -32,6 +32,7 @@ Snippets are versioned here.
 	- The version of Node.js is the value of the `g_Node_js_Version` variable
 		in the shell script to be executed later
 	- Some shell scripts need to be placed in the location indicated by the error message when they are run
+	- You can also double-click `run_*.bat` file to run them
 3. Open bash and run one of the shell scripts in the Takakiri&apos;s snippet.
 	- Shell script file has .sh extension
 	- To launch bash, right-click on a folder and select **Git Bash Here**

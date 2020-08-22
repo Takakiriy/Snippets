@@ -34,6 +34,8 @@ function  Main_func()
 		SetUp_func
 	elif [ "$1" == "clean"  -o  "$1" == "cleanup" ]; then
 		CleanUp_func
+	elif [ "$1" == "uninstall" ]; then
+		Uninstall_func
 	else
 		echo  "Unknown command name."
 	fi
@@ -72,6 +74,17 @@ echo "Skipped"  ;fi
 # Function: CleanUp_func
 #********************************************************************
 function  CleanUp_func()
+{
+	EchoNextCommand_func
+
+	rm -rf  "node_modules"
+}
+
+
+#********************************************************************
+# Function: Uninstall_func
+#********************************************************************
+function  Uninstall_func()
 {
 	SetUpVariables_func
 
