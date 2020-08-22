@@ -98,6 +98,7 @@ function  return_func()
 #    else
 #        echo  "in Linux or others"
 #    fi
+#    if ! IsWindows_func; then  #// If not Windows
 #*********************************************************************
 function  IsWindows_func()
 {
@@ -274,6 +275,7 @@ function  ColorText_func()
 			sequence="${sequence}${color_code};"
 		fi
 	done ; done_func $?
+	in_Text="$( echo "$in_Text" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
 
 	g_ReturnValue="${sequence}${in_Text}\e[m"
 }

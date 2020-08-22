@@ -114,6 +114,8 @@ function  Uninstall_func()
 
 
 	#// Clean this project
+	echo  ""
+	ColorEcho_func  "Uninstall Azure Functions Core Tools ...\n"  "Green"
 	local  paths=(
 		"node_modules" )
 	for  path  in  "${paths[@]}" ;do
@@ -238,7 +240,7 @@ function  InstallAzureCLI_func()
 			echo  "https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli-windows?view=azure-cli-latest"
 			echo  "Azure CLI ${g_AzureCLI_Version} \"${g_AzureCLI_Installer}\""
 			echo  ""
-			Error_func  "Not found Azure CLI ${g_AzureCLI_Version} installer at ./${g_AzureCLI_Installer}"
+			Error_func  "Not found Azure CLI ${g_AzureCLI_Version} installer at ${g_AzureCLI_Installer}"
 		fi
 
 
@@ -295,8 +297,8 @@ function  SetUpVariables_func()
 	if IsWindows_func; then
 		export  g_Node_js_Installer="${USERPROFILE}\Downloads\node-v${g_Node_js_Version}-x64.msi"
 	else
-		export  g_Node_js_Installer="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64.tar.xz"
-		export g_Node_js_FolderName="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64"
+		export  g_Node_js_Installer="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64.tar.xz"
+		export g_Node_js_FolderName="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64"
 	fi
 	if IsWindows_func; then
 		export  HOME=$( cygpath --unix "${USERPROFILE}" )
@@ -311,7 +313,7 @@ function  SetUpVariables_func()
 	fi
 
 	#// Set Azure CLI variables
-	export  g_AzureCLI_Installer="${USERPROFILE}\Downloads\azure-cli-${g_AzureCLI_Version}.msi"
+	export  g_AzureCLI_Installer="${USERPROFILE}\\Downloads\\azure-cli-${g_AzureCLI_Version}.msi"
 
 	#// Set PATH variable
 	if IsWindows_func; then
@@ -366,6 +368,9 @@ function  SetVariables_func()
 
 #********************************************************************
 # Section: bashlib
+#
+# Description:
+#    This was synchronized with bashlib in 2020-08-23 commit 79d70c42.
 #********************************************************************
 
 #********************************************************************
@@ -581,6 +586,7 @@ function  ColorText_func()
 			sequence="${sequence}${color_code};"
 		fi
 	done ; done_func $?
+	in_Text="$( echo "$in_Text" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
 
 	g_ReturnValue="${sequence}${in_Text}\e[m"
 }
