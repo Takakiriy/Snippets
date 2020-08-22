@@ -254,13 +254,11 @@ function  SetUpVariables_func()
 		export  g_NodePrefix="${NODE_HOME}/lib"
 	fi
 
-	export  g_PathOfCDK="${g_NodePrefix}/node_modules/aws-cdk/bin"
-
 	#// Set PATH variable
 	if IsWindows_func; then
 		export  PATH="$PATH:${g_NodePrefix}:/c/Program Files/nodejs:${NODE_HOME}/node_modules/npm/bin"
 	else
-		export  PATH="$PATH:${g_PathOfCDK}:${NODE_HOME}/bin:${NODE_PATH}/.bin"
+		export  PATH="$PATH:${NODE_HOME}/bin:${NODE_PATH}/.bin"
 	fi
 
 	#// Show variables

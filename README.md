@@ -11,10 +11,12 @@ Snippets are versioned here.
 		- [bashlib](for-bash/base/bashlib/Example_without_inc.sh) - A basic part of the bash shell script file that also allows for efficient debugging
 	- [git_clone_commit](for-bash/git_clone_commit/git_clone_commit.sh) - Git clone a specific commit
 	- installer
+		- Azure
+			- [CLI](for-bash/installer/Azure/CLI/scripts.sh)
 		- cypress - E2E automatic test tool
-			- [base](for-bash/installer/cypress/base/install_Cypress.sh)
-			- [+ log in](for-bash/installer/cypress/login/install_Cypress.sh)
-		- [Node.js](for-bash/installer/Node_js/install_Node_js.sh)
+			- [base](for-bash/installer/cypress/base/scripts.sh)
+			- [+ log in](for-bash/installer/cypress/login/scripts.sh)
+		- [Node.js](for-bash/installer/Node_js/scripts.sh)
 		- Visual Studio Code
 			- [base](for-bash/installer/VisualStudioCode/base/install_VisualStudioCode.sh)
 			- [+ TypeScript](for-bash/installer/VisualStudioCode/TypeScript/install_TypeScript_VSCode.sh)
