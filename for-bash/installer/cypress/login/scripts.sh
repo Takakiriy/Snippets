@@ -34,14 +34,12 @@ export  g_ProgramFiles_of_Node_js="/c/Program Files/nodejs"
 #********************************************************************
 function  Main_func()
 {
-	if [ "$1" == ""  -o  "$1" == "setup" ]; then
+	if [ "$1" == ""  -o  "$1" == "setup"  -o  "$1" == "open" ]; then
 		SetUp_func
 	elif [ "$1" == "clean"  -o  "$1" == "cleanup" ]; then
 		CleanUp_func
-	elif [ "$1" == "watch" ]; then
-		WatchTypeScript_func
-	elif [ "$1" == "run" ]; then
-		Run_func
+	elif [ "$1" == "uninstall" ]; then
+		Uninstall_func
 	else
 		echo  "Unknown command name."
 	fi
@@ -99,6 +97,23 @@ echo "Skipped"  ;fi
 #********************************************************************
 function  CleanUp_func()
 {
+	EchoNextCommand_func
+
+	rm -rf  "node_modules"
+	EchoNextCommand_func
+
+	rm -f   "_logInCookie.json"
+	EchoNextCommand_func
+
+	rm -f   "_logInLocalStorage.json"
+}
+
+
+#********************************************************************
+# Function: Uninstall_func
+#********************************************************************
+function  Uninstall_func()
+{
 	SetUpVariables_func
 	GetSharedDependencies_func  "${g_DependenciesTitle}"  "${g_Dependencies[@]}"  #// g_SharedDependencies = .
 
@@ -136,31 +151,6 @@ function  CleanUp_func()
 
 
 #********************************************************************
-# Function: Run_func
-#********************************************************************
-function  Run_func()
-{
-	EchoNextCommand_func
-
-	"${g_ProgramFiles_of_Node_js}/node"  "out/hello.js"
-	EchoNextCommand_func
-
-	"${g_ProgramFiles_of_Node_js}/node"  "out/start_notepad.js"
-}
-
-
-#********************************************************************
-# Function: WatchTypeScript_func
-#********************************************************************
-function  WatchTypeScript_func()
-{
-	EchoNextCommand_func
-
-	node_modules/typescript/bin/tsc  --watch
-}
-
-
-#********************************************************************
 # Function: Install_Node_js_func
 #    Install Node.js
 #
@@ -190,7 +180,7 @@ function  Install_Node_js_func()
 			Clear_Node_js_func
 			EchoNextCommand_func
 
-			echo  "prefix=${g_NodePrefixForWindows}" > "${HOME}\.npmrc"  #// npm set prefix
+			echo  "prefix=${g_NodePrefixForWindows}" > "${HOME}/.npmrc"  #// npm set prefix
 			EchoNextCommand_func
 
 			msiexec.exe -i "${g_Node_js_Installer}" -qr
@@ -253,7 +243,7 @@ function  SetUpVariables_func()
 		export g_Node_js_FolderName="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64"
 	fi
 	if IsWindows_func; then
-		export  HOME="/c/Users/${USERNAME}"
+		export  HOME=$( cygpath --unix "${USERPROFILE}" )
 		export  NODE_HOME="/c/Program Files/nodejs"
 		export  NODE_PATH="${NODE_HOME}/node_modules/npm/node_modules"
 		export  g_NodePrefix="${HOME}/AppData/Roaming/npm"
@@ -811,35 +801,37 @@ function  GetSharedDependencies_func()
 	#// "${HOME}/.dependencies" folder of the elements of "in_Dependencies" array.
 	#jp:// in_Dependencies 配列の要素のうち、${HOME}/.dependencies フォルダーにあるファイルの中に書かれている
 	#jp:// モジュール名を g_SharedDependencies 連想配列のキーに設定します。
-	local  file_paths=( $(find  "${HOME}/.dependencies") )
+	if [ -e "${HOME}/.dependencies" ]; then
+		local  file_paths=( $(find  "${HOME}/.dependencies") )
 
-	for  file_path  in  "${file_paths[@]}"; do
-		local  is_other_file=${False}
-		if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
-			if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
-				is_other_file=${True}
+		for  file_path  in  "${file_paths[@]}"; do
+			local  is_other_file=${False}
+			if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
+				if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
+					is_other_file=${True}
+				fi
 			fi
-		fi
-		if [ ${is_other_file} == ${True} ]; then
-			local  line
-			local  modules_in_other_files=()
-			while read  line; do
-				modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
-			done < <( cat "${file_path}" )
+			if [ ${is_other_file} == ${True} ]; then
+				local  line
+				local  modules_in_other_files=()
+				while read  line; do
+					modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
+				done < <( cat "${file_path}" )
 
-			for  module  in  "${modules_in_other_files[@]}" ;do
-				local  dependencies_has_the_module=${False}
-				if [ -v dependencies[${module}] ];then
-					dependencies_has_the_module=${True}
-				fi
-				local  is_shared=${dependencies_has_the_module}
+				for  module  in  "${modules_in_other_files[@]}" ;do
+					local  dependencies_has_the_module=${False}
+					if [ -v dependencies[${module}] ];then
+						dependencies_has_the_module=${True}
+					fi
+					local  is_shared=${dependencies_has_the_module}
 
-				if [ ${is_shared} == ${True} ]; then
-					g_SharedDependencies[${module}]="dummy"
-				fi
-			done
-		fi
-	done
+					if [ ${is_shared} == ${True} ]; then
+						g_SharedDependencies[${module}]="dummy"
+					fi
+				done
+			fi
+		done
+	fi
 }
 declare -A  g_SharedDependencies
 

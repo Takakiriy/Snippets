@@ -7,11 +7,11 @@
     "license": "ISC",
     "private": false,
     "devDependencies": {
-        "@types/node": "^13.13.4",
-        "cypress": "^4.10.0",
-        "typescript": "^3.7.2"
+        "@types/node": "^13.13.15",
+        "cypress": "^4.12.1",
+        "typescript": "^3.9.7"
     },
     "dependencies": {
-        "iconv-lite": "^0.5.1"
+        "iconv-lite": "^0.5.2"
     }
 }

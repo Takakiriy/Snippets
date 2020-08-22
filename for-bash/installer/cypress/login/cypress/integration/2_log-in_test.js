@@ -1,6 +1,6 @@
 import * as cmd from "../my-cmd.js"
 import * as lib from "../my-lib.js"
-const httpOrigin = Cypress.env('HttpOrigin')
+const httpOrigin = lib.env('HttpOrigin')
 
 describe('Automatic log in and click hyper link', () => {
 	beforeEach(() => {

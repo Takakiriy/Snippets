@@ -1,6 +1,6 @@
 import * as cmd from "../my-cmd.js"
 import * as lib from "../my-lib.js"
-const httpOrigin = Cypress.env('HttpOrigin')
+const httpOrigin = lib.env('HttpOrigin')
 
 describe('Location', () => {
 	before(() => {
@@ -13,9 +13,9 @@ describe('Location', () => {
 		//        "LogInAccount": "tester",
 		//        "LogInPassword": "123456"
 		//    }
-		expect(Cypress.env( 'HttpOrigin' )).be.not.eq("")
-		expect(Cypress.env( 'LogInAccount' )).be.not.eq("")
-		expect(Cypress.env( 'LogInPassword' )).be.not.eq("")
+		expect(lib.env( 'HttpOrigin' )).be.not.eq("")
+		expect(lib.env( 'LogInAccount' )).be.not.eq("")
+		expect(lib.env( 'LogInPassword' )).be.not.eq("")
 
 		// visit httpOrigin
 		cy.clearCookies()
@@ -26,8 +26,8 @@ describe('Location', () => {
 
 	it( 'visited', () => {
 
-		cy.get('[data-test="username-input"]').type(Cypress.env( 'LogInAccount' ))
-		cy.get('[data-test="sign-in-password-input"]').type(Cypress.env( 'LogInPassword' )+`{enter}`)
+		cy.get('[data-test="username-input"]').type(lib.env( 'LogInAccount' ))
+		cy.get('[data-test="sign-in-password-input"]').type(lib.env( 'LogInPassword' )+`{enter}`)
 
 		cy.location('href').should('eq', httpOrigin).then( (href)=>{
 			cmd.saveLogInToken()

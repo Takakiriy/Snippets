@@ -1,4 +1,14 @@
-// Functions without cypress commands
+﻿// Functions without cypress commands
+import * as cypressEnv from "../cypress.env.js"
+
+// env
+export function  env(key) {
+	return  cypressEnv.env[key];
+}
+
+// share
+//jp: lib.share は、テスト スクリプトと lib などで共有する変数などを格納するオブジェクトです
+export var share = {}
 
 // getLocalStorage
 export function  getLocalStorage() {
