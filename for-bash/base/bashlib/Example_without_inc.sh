@@ -224,7 +224,7 @@ function  EchoOff_func()
 #    None
 #
 # Example:
-#    > ColorEcho_func  "Pass."  "Green"
+#    > ColorEcho_func  "Pass.\n"  "Green"
 #********************************************************************
 function  ColorEcho_func()
 {
@@ -335,7 +335,6 @@ function  ColorText_func()
 			sequence="${sequence}${color_code};"
 		fi
 	done ; done_func $?
-	in_Text="$( echo "$in_Text" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
 
 	g_ReturnValue="${sequence}${in_Text}\e[m"
 }
@@ -425,7 +424,8 @@ function  ErrTrap_func()
 		if [ "$g_Err_Desc" == "" ];then
 			ColorText_func  "<ERROR/>"  "Red" "Bold"
 		else
-			ColorText_func  "$g_Err_Desc"  "Red" "Bold"
+			local  error_description="$( echo "$g_Err_Desc" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
+			ColorText_func  "$error_description"  "Red" "Bold"
 		fi
 		echo_e_func  "$g_ReturnValue" >&2
 		echo "Exit Status = $g_ExitStatus"  >&2
@@ -562,35 +562,37 @@ function  GetSharedDependencies_func()
 	#// "${HOME}/.dependencies" folder of the elements of "in_Dependencies" array.
 	#jp:// in_Dependencies 配列の要素のうち、${HOME}/.dependencies フォルダーにあるファイルの中に書かれている
 	#jp:// モジュール名を g_SharedDependencies 連想配列のキーに設定します。
-	local  file_paths=( $(find  "${HOME}/.dependencies") )
+	if [ -e "${HOME}/.dependencies" ]; then
+		local  file_paths=( $(find  "${HOME}/.dependencies") )
 
-	for  file_path  in  "${file_paths[@]}"; do
-		local  is_other_file=${False}
-		if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
-			if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
-				is_other_file=${True}
+		for  file_path  in  "${file_paths[@]}"; do
+			local  is_other_file=${False}
+			if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
+				if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
+					is_other_file=${True}
+				fi
 			fi
-		fi
-		if [ ${is_other_file} == ${True} ]; then
-			local  line
-			local  modules_in_other_files=()
-			while read  line; do
-				modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
-			done < <( cat "${file_path}" )
+			if [ ${is_other_file} == ${True} ]; then
+				local  line
+				local  modules_in_other_files=()
+				while read  line; do
+					modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
+				done < <( cat "${file_path}" )
 
-			for  module  in  "${modules_in_other_files[@]}" ;do
-				local  dependencies_has_the_module=${False}
-				if [ -v dependencies[${module}] ];then
-					dependencies_has_the_module=${True}
-				fi
-				local  is_shared=${dependencies_has_the_module}
+				for  module  in  "${modules_in_other_files[@]}" ;do
+					local  dependencies_has_the_module=${False}
+					if [ -v dependencies[${module}] ];then
+						dependencies_has_the_module=${True}
+					fi
+					local  is_shared=${dependencies_has_the_module}
 
-				if [ ${is_shared} == ${True} ]; then
-					g_SharedDependencies[${module}]="dummy"
-				fi
-			done
-		fi
-	done
+					if [ ${is_shared} == ${True} ]; then
+						g_SharedDependencies[${module}]="dummy"
+					fi
+				done
+			fi
+		done
+	fi
 }
 declare -A  g_SharedDependencies
 
@@ -615,8 +617,6 @@ function  RemoveDependencies_func()
 }
 
 
-#********************************************************************
-# Function: SafeFileUpdate_func
 #********************************************************************
 function  SafeFileUpdate_func()
 {

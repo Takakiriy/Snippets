@@ -4,9 +4,9 @@ set -eE
 #// -eE option breaks execution, when an error was occurred.
 
 #********************************************************************
-#* File: install_Node_js.sh
-#    Type "./install_Node_js.sh" in Windows git bash.
-#    Type "chmod +x install_Node_js.sh" and "./install_Node_js.sh" in Linux bash.
+#* File: scripts.sh
+#    Type "./scripts.sh" in Windows git bash.
+#    Type "chmod +x scripts.sh" and "./scripts.sh" in Linux bash.
 #********************************************************************
 
 #// Setting
@@ -32,12 +32,14 @@ function  Main_func()
 {
 	if [ "$1" == ""  -o  "$1" == "setup" ]; then
 		SetUp_func
+	elif [ "$1" == "set-path" ]; then
+		SetVariables_func
 	elif [ "$1" == "clean"  -o  "$1" == "cleanup" ]; then
 		CleanUp_func
 	elif [ "$1" == "uninstall" ]; then
 		Uninstall_func
 	else
-		echo  "Unknown command name."
+		Error_func  "Unknown command name: $1"
 	fi
 	return  0
 }
@@ -49,24 +51,14 @@ function  Main_func()
 function  SetUp_func()
 {
 	SetUpVariables_func
-
+	SetUpVariables_Node_js_func
 
 	#// Skip
 if false; then #// "Skipped"
 echo "Skipped"  ;fi
 
-
-	#// Install Node.js
+	#// Install
 	Install_Node_js_func
-
-
-	#// Show versions
-	EchoNextCommand_func
-
-	node --version
-	EchoNextCommand_func
-
-	npm --version
 }
 
 
@@ -87,6 +79,7 @@ function  CleanUp_func()
 function  Uninstall_func()
 {
 	SetUpVariables_func
+	SetUpVariables_Node_js_func
 
 
 	#// Skip
@@ -94,8 +87,41 @@ if false; then #// "Skipped"
 echo "Skipped"  ;fi
 
 
-	#// Uninstall Node.js
-	Uninstall_Node_js_func
+	#// Uninstall
+	UninstallWithConfirm_Node_js_func
+}
+
+
+#********************************************************************
+# Function: SetUpVariables_Node_js_func
+#********************************************************************
+function  SetUpVariables_Node_js_func()
+{
+	if IsWindows_func; then
+		export  g_Node_js_Installer="${USERPROFILE}\Downloads\node-v${g_Node_js_Version}-x64.msi"
+	else
+		export  g_Node_js_Installer="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64.tar.xz"
+		export g_Node_js_FolderName="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64"
+	fi
+	if IsWindows_func; then
+		export  NODE_HOME="/c/Program Files/nodejs"
+		export  NODE_PATH="${NODE_HOME}/node_modules/npm/node_modules"
+		export  g_NodePrefix="${HOME}/AppData/Roaming/npm"
+		export  g_NodePrefixForWindows="${USERPROFILE}\AppData\Roaming\npm"
+	else
+		export  NODE_HOME="${g_ParentPathOfThisScript}/${g_Node_js_FolderName}"
+		export  NODE_PATH="${NODE_HOME}/lib/node_modules"
+		export  g_NodePrefix="${NODE_HOME}/lib"
+	fi
+	export  g_Node_js_DependenciesTitle="Node_js"
+	export  g_Node_js_Dependencies=( "Node.js" )
+
+	#// Add PATH values
+	if IsWindows_func; then
+		export  PATH="$PATH:${g_NodePrefix}:/c/Program Files/nodejs:${NODE_HOME}/node_modules/npm/bin"
+	else
+		export  PATH="$PATH:${NODE_HOME}/bin:${NODE_PATH}/.bin"
+	fi
 }
 
 
@@ -104,7 +130,7 @@ echo "Skipped"  ;fi
 #    Install Node.js
 #
 # Description:
-#    This was synchronized with "Snippets\for-bash\installer\Node_js\install_Node_js.sh" in 2020-07-24 commit next to 7e8ecdf.
+#    This was synchronized with "Snippets\for-bash\installer\Node_js\scripts.sh" in 2020-08-24 commit next to 53ad2e99.
 #********************************************************************
 function  Install_Node_js_func()
 {
@@ -129,7 +155,7 @@ function  Install_Node_js_func()
 			Clear_Node_js_func
 			EchoNextCommand_func
 
-			echo  "prefix=${g_NodePrefixForWindows}" > "${HOME}\.npmrc"  #// npm set prefix
+			echo  "prefix=${g_NodePrefixForWindows}" > "${HOME}/.npmrc"  #// npm set prefix
 			EchoNextCommand_func
 
 			msiexec.exe -i "${g_Node_js_Installer}" -qr
@@ -141,6 +167,7 @@ function  Install_Node_js_func()
 
 			tar Jxfv  "${g_Node_js_Installer}" > /dev/null
 		fi
+		AddDependencies_func  "${g_Node_js_DependenciesTitle}"  "${g_Node_js_Dependencies[@]}"
 	fi
 }
 
@@ -155,8 +182,31 @@ function  Uninstall_Node_js_func()
 
 		msiexec.exe -x  "${g_Node_js_Installer}" -qr
 	fi
+	RemoveDependencies_func  "${g_Node_js_DependenciesTitle}"
 
 	Clear_Node_js_func
+}
+
+
+#********************************************************************
+# Function: UninstallWithConfirm_Node_js_func
+#********************************************************************
+function  UninstallWithConfirm_Node_js_func()
+{
+	if IsWindows_func; then
+		echo  ""
+		ColorEcho_func  "Uninstall up Node.js and node_modules folder ...\n"  "Green"
+		GetSharedDependencies_func  "${g_Node_js_DependenciesTitle}"  "${g_Node_js_Dependencies[@]}"
+			#// g_SharedDependencies = .
+		if [ -v g_SharedDependencies["Node.js"] ]; then
+			echo  "Skipped. Because Node.js is used by other modules"
+		fi
+		Pause_func
+		if [ ! -v g_SharedDependencies["Node.js"] ]; then
+
+			Uninstall_Node_js_func
+		fi
+	fi
 }
 
 
@@ -183,38 +233,9 @@ function  Clear_Node_js_func()
 function  SetUpVariables_func()
 {
 	export  g_ParentPathOfThisScript="$( pwd )"
-
-	#// Set Node.js variables
 	if IsWindows_func; then
-		export  g_Node_js_Installer="${USERPROFILE}\Downloads\node-v${g_Node_js_Version}-x64.msi"
-	else
-		export  g_Node_js_Installer="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64.tar.xz"
-		export g_Node_js_FolderName="${HOME}\Downloads\node-v${g_Node_js_Version}-linux-x64"
+		export  HOME=$( cygpath --unix "${USERPROFILE}" )
 	fi
-	if IsWindows_func; then
-		export  HOME="/c/Users/${USERNAME}"
-		export  NODE_HOME="/c/Program Files/nodejs"
-		export  NODE_PATH="${NODE_HOME}/node_modules/npm/node_modules"
-		export  g_NodePrefix="${HOME}/AppData/Roaming/npm"
-		export  g_NodePrefixForWindows="${USERPROFILE}\AppData\Roaming\npm"
-	else
-		export  NODE_HOME="${g_ParentPathOfThisScript}/${g_Node_js_FolderName}"
-		export  NODE_PATH="${NODE_HOME}/lib/node_modules"
-		export  g_NodePrefix="${NODE_HOME}/lib"
-	fi
-
-	export  g_PathOfCDK="${g_NodePrefix}/node_modules/aws-cdk/bin"
-
-	#// Set PATH variable
-	if IsWindows_func; then
-		export  PATH="$PATH:${g_NodePrefix}:/c/Program Files/nodejs:${NODE_HOME}/node_modules/npm/bin"
-	else
-		export  PATH="$PATH:${g_PathOfCDK}:${NODE_HOME}/bin:${NODE_PATH}/.bin"
-	fi
-
-	#// Show variables
-	ShowVariables_func
-	echo  "g_NodePrefix = ${g_NodePrefix}"
 }
 
 
@@ -229,6 +250,7 @@ function  ShowVariables_func()
 	echo  "    export NODE_HOME=\"${NODE_HOME}\""
 	echo  "    export NODE_PATH=\"${NODE_PATH}\""
 	echo  "    export PATH=\"${PATH}\""
+	echo  "    export g_NodePrefix = ${g_NodePrefix}"
 	echo  "-------------------------------------------------"
 }
 
@@ -239,6 +261,10 @@ function  ShowVariables_func()
 function  SetVariables_func()
 {
 	SetUpVariables_func
+	SetUpVariables_Node_js_func
+	SetUpVariables_AzureFunctionsCoreTools_func
+	SetUpVariables_AzureCLI_func
+
 	ShowVariables_func
 	pushd  "${g_StartInPath}" > /dev/null
 
@@ -256,6 +282,9 @@ function  SetVariables_func()
 
 #********************************************************************
 # Section: bashlib
+#
+# Description:
+#    This was synchronized with bashlib in 2020-08-24 commit next to 53ad2e99.
 #********************************************************************
 
 #********************************************************************
@@ -294,6 +323,7 @@ function  return_func()
 #    else
 #        echo  "in Linux or others"
 #    fi
+#    if ! IsWindows_func; then  #// If not Windows
 #*********************************************************************
 function  IsWindows_func()
 {
@@ -359,7 +389,7 @@ function  EchoNextTrap_func()
 #    None
 #
 # Example:
-#    > ColorEcho_func  "Pass."  "Green"
+#    > ColorEcho_func  "Pass.\n"  "Green"
 #********************************************************************
 function  ColorEcho_func()
 {
@@ -559,7 +589,8 @@ function  ErrTrap_func()
 		if [ "$g_Err_Desc" == "" ];then
 			ColorText_func  "<ERROR/>"  "Red" "Bold"
 		else
-			ColorText_func  "$g_Err_Desc"  "Red" "Bold"
+			local  error_description="$( echo "$g_Err_Desc" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
+			ColorText_func  "$error_description"  "Red" "Bold"
 		fi
 		echo_e_func  "$g_ReturnValue" >&2
 		echo "Exit Status = $g_ExitStatus"  >&2
@@ -655,8 +686,11 @@ function  AddDependencies_func()
 	local  in_Title="$1"
 	shift
 	local  in_Dependencies=( $* )
-
+	if [ ! -e "${HOME}/.dependencies" ]; then
+		mkdir  "${HOME}/.dependencies"
+	fi
 	rm -f  "${HOME}/.dependencies/${in_Title}.txt"
+
 	for  module  in  "${in_Dependencies[@]}" ;do
 		echo  "${module}" >> "${HOME}/.dependencies/${in_Title}.txt"
 	done
@@ -693,35 +727,37 @@ function  GetSharedDependencies_func()
 	#// "${HOME}/.dependencies" folder of the elements of "in_Dependencies" array.
 	#jp:// in_Dependencies 配列の要素のうち、${HOME}/.dependencies フォルダーにあるファイルの中に書かれている
 	#jp:// モジュール名を g_SharedDependencies 連想配列のキーに設定します。
-	local  file_paths=( $(find  "${HOME}/.dependencies") )
+	if [ -e "${HOME}/.dependencies" ]; then
+		local  file_paths=( $(find  "${HOME}/.dependencies") )
 
-	for  file_path  in  "${file_paths[@]}"; do
-		local  is_other_file=${False}
-		if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
-			if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
-				is_other_file=${True}
+		for  file_path  in  "${file_paths[@]}"; do
+			local  is_other_file=${False}
+			if [ -f "${file_path}" ]; then  #// Because file_paths has a folder path
+				if [ "${file_path}" != "${HOME}/.dependencies/${in_Title}.txt" ]; then
+					is_other_file=${True}
+				fi
 			fi
-		fi
-		if [ ${is_other_file} == ${True} ]; then
-			local  line
-			local  modules_in_other_files=()
-			while read  line; do
-				modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
-			done < <( cat "${file_path}" )
+			if [ ${is_other_file} == ${True} ]; then
+				local  line
+				local  modules_in_other_files=()
+				while read  line; do
+					modules_in_other_files=("${modules_in_other_files[@]}" "${line}")
+				done < <( cat "${file_path}" )
 
-			for  module  in  "${modules_in_other_files[@]}" ;do
-				local  dependencies_has_the_module=${False}
-				if [ -v dependencies[${module}] ];then
-					dependencies_has_the_module=${True}
-				fi
-				local  is_shared=${dependencies_has_the_module}
+				for  module  in  "${modules_in_other_files[@]}" ;do
+					local  dependencies_has_the_module=${False}
+					if [ -v dependencies[${module}] ];then
+						dependencies_has_the_module=${True}
+					fi
+					local  is_shared=${dependencies_has_the_module}
 
-				if [ ${is_shared} == ${True} ]; then
-					g_SharedDependencies[${module}]="dummy"
-				fi
-			done
-		fi
-	done
+					if [ ${is_shared} == ${True} ]; then
+						g_SharedDependencies[${module}]="dummy"
+					fi
+				done
+			fi
+		done
+	fi
 }
 declare -A  g_SharedDependencies
 

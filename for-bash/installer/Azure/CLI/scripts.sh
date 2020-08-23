@@ -14,13 +14,6 @@ set -eE
 export  g_Node_js_Version="12.18.3"
 
 export  g_AzureCLI_Version="2.10.1"
-
-export  g_DependenciesTitle="AzureCLI"
-export  g_Dependencies=( "AzureCLI" "Node.js" )
-
-export  g_AzureCLIFolder="/c/Program Files (x86)/Microsoft SDKs/Azure/CLI2/wbin"
-
-export  g_ProgramFiles_of_Node_js="/c/Program Files/nodejs"
 #//==================================================================
 
 
@@ -44,7 +37,7 @@ function  Main_func()
 	elif [ "$1" == "uninstall" ]; then
 		Uninstall_func
 	else
-		echo  "Unknown command name."
+		Error_func  "Unknown command name: $1"
 	fi
 	return  0
 }
@@ -56,40 +49,18 @@ function  Main_func()
 function  SetUp_func()
 {
 	SetUpVariables_func
+	SetUpVariables_Node_js_func
+	SetUpVariables_AzureFunctionsCoreTools_func
+	SetUpVariables_AzureCLI_func
 
 	#// Skip
 if false; then #// "Skipped"
 echo "Skipped"  ;fi
 
-
-	#// Install Node.js
-
+	#// Install
 	Install_Node_js_func
-	EchoNextCommand_func
-
-	"${g_ProgramFiles_of_Node_js}/node" --version
-	EchoNextCommand_func
-
-	"${g_ProgramFiles_of_Node_js}/npm" --version
-
-
-	#// Install Azure CLI
-
-	InstallAzureCLI_func
-
-
-	#// Install Azure Functions Core Tools
-	if [ ! -e "node_modules/.bin/func" ]; then
-		echo  ""
-		ColorEcho_func  "Install Azure Functions Core Tools ...\n"  "Green"
-		EchoNextCommand_func
-
-		"${g_ProgramFiles_of_Node_js}/npm" ci
-	fi
-
-
-	#// ...
-	AddDependencies_func  "${g_DependenciesTitle}"  "${g_Dependencies[@]}"
+	Install_AzureCLI_func
+	Install_AzureFunctionsCoreTools_func
 }
 
 
@@ -110,57 +81,192 @@ function  CleanUp_func()
 function  Uninstall_func()
 {
 	SetUpVariables_func
-	GetSharedDependencies_func  "${g_DependenciesTitle}"  "${g_Dependencies[@]}"  #// g_SharedDependencies = .
+	SetUpVariables_Node_js_func
+	SetUpVariables_AzureFunctionsCoreTools_func
+	SetUpVariables_AzureCLI_func
 
 
-	#// Clean this project
-	echo  ""
-	ColorEcho_func  "Uninstall Azure Functions Core Tools ...\n"  "Green"
-	local  paths=(
-		"node_modules" )
-	for  path  in  "${paths[@]}" ;do
-		echo  "${path}"
-	done  #// ; done_func $?
-	Pause_func
-	for  path  in  "${paths[@]}" ;do
+	#// Uninstall
+	UnInstallWithConfirm_AzureFunctionsCoreTools_func
+	UnInstallWithConfirm_AzureCLI_func
+	UninstallWithConfirm_Node_js_func
+}
+
+
+#********************************************************************
+# Function: SetUpVariables_AzureFunctionsCoreTools_func
+#********************************************************************
+function  SetUpVariables_AzureFunctionsCoreTools_func()
+{
+	export  g_AzureFunctionsCoreTools_DependenciesTitle="AzureFunctionsCoreTools"
+	export  g_AzureFunctionsCoreTools_Dependencies=( "Azure_Functions_Core_Tools" "Node.js" )
+
+	#// PATH is g_NodePrefix
+}
+
+
+#********************************************************************
+# Function: Install_AzureFunctionsCoreTools_func
+#    Install Azure CLI
+#********************************************************************
+function  Install_AzureFunctionsCoreTools_func()
+{
+	if [ ! -e "${g_NodePrefix}/func" ]; then
+		echo  ""
+		ColorEcho_func  "Install Azure Functions Core Tools ...\n"  "Green"
 		EchoNextCommand_func
 
-		rm -rf  "${path}"
-	done  #// ; done_func $?
+		npm install -g  azure-functions-core-tools
+		AddDependencies_func \
+			"${g_AzureFunctionsCoreTools_DependenciesTitle}" \
+			"${g_AzureFunctionsCoreTools_Dependencies[@]}"
+	fi
+}
+
+#********************************************************************
+# Function: UnInstall_AzureFunctionsCoreTools_func
+#********************************************************************
+function  UnInstall_AzureFunctionsCoreTools_func()
+{
+	if [ -e "${g_NodePrefix}/func" ]; then
+		GetSharedDependencies_func \
+			"${g_AzureFunctionsCoreTools_DependenciesTitle}" \
+			"${g_AzureFunctionsCoreTools_Dependencies[@]}"  #// g_SharedDependencies = .
+		EchoNextCommand_func
+
+		npm uninstall -g  azure-functions-core-tools
+		RemoveDependencies_func  "${g_AzureCLI_DependenciesTitle}"
+	fi
+}
+
+#********************************************************************
+# Function: UnInstallWithConfirm_AzureFunctionsCoreTools_func
+#********************************************************************
+function  UnInstallWithConfirm_AzureFunctionsCoreTools_func()
+{
+	echo  ""
+	ColorEcho_func  "Uninstall Azure Functions Core Tools ...\n"  "Green"
+	if [ ! -e "${g_NodePrefix}/func" ]; then
+		echo  "Already uninstalled"
+	fi
+	Pause_func
+	if [ -e "${g_NodePrefix}/func" ]; then
+
+		UnInstall_AzureFunctionsCoreTools_func
+	fi
+}
 
 
-	#// ...
-	if IsWindows_func; then
-		echo  ""
-		ColorEcho_func  "Uninstall Azure CLI ...\n"  "Green"
-		if [ ! -e "${g_AzureCLIFolder}" ]; then
-			echo  "Already uninstalled"
+#********************************************************************
+# Function: SetUpVariables_AzureCLI_func
+#********************************************************************
+function  SetUpVariables_AzureCLI_func()
+{
+	export  g_AzureCLI_PATH="/c/Program Files (x86)/Microsoft SDKs/Azure/CLI2/wbin"
+	export  g_AzureCLI_DependenciesTitle="AzureCLI"
+	export  g_AzureCLI_Dependencies=( "AzureCLI" "Node.js" )
+	export  g_AzureCLI_Installer="${USERPROFILE}\\Downloads\\azure-cli-${g_AzureCLI_Version}.msi"
+
+	export  PATH="$PATH:${g_AzureCLI_PATH}"  #// az command
+}
+
+
+#********************************************************************
+# Function: Install_AzureCLI_func
+#    Install Azure CLI
+#********************************************************************
+function  Install_AzureCLI_func()
+{
+	if [ ! -e "${g_AzureCLI_PATH}" ]; then
+
+		#// Guard
+		if [ ! -e "${g_AzureCLI_Installer}" ]; then
+			echo  ""
+			echo  "Download Azure CLI installer and copy it to this folder."
+			echo  "https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli-windows?view=azure-cli-latest"
+			echo  "Azure CLI ${g_AzureCLI_Version} \"${g_AzureCLI_Installer}\""
+			echo  ""
+			Error_func  "Not found Azure CLI ${g_AzureCLI_Version} installer at ${g_AzureCLI_Installer}"
 		fi
-		Pause_func
-		if [ -e "${g_AzureCLIFolder}" ]; then
 
-			UninstallAzureCLI_func
+
+		#// Install Azure CLI
+		echo  ""
+		ColorEcho_func  "Install Azure CLI ...\n"  "Green"
+		if IsWindows_func; then
+			EchoNextCommand_func
+
+			msiexec.exe -i "${g_AzureCLI_Installer}" -qr
+			AddDependencies_func  "${g_AzureCLI_DependenciesTitle}"  "${g_AzureCLI_Dependencies[@]}"
 		fi
 	fi
+}
 
 
-	#// ...
-	if IsWindows_func; then
-		echo  ""
-		ColorEcho_func  "Uninstall up Node.js and node_modules folder ...\n"  "Green"
-		if [ -v g_SharedDependencies["Node.js"] ]; then
-			echo  "Skipped"
-		fi
-		Pause_func
-		if [ ! -v g_SharedDependencies["Node.js"] ]; then
+#********************************************************************
+# Function: UnInstall_AzureCLI_func
+#********************************************************************
+function  UnInstall_AzureCLI_func()
+{
+	if [ -e "${g_AzureCLI_PATH}" ]; then
+		GetSharedDependencies_func  "${g_AzureCLI_DependenciesTitle}"  "${g_AzureCLI_Dependencies[@]}"
+			#// g_SharedDependencies = .
+		EchoNextCommand_func
 
-			Uninstall_Node_js_func
-		fi
+		msiexec.exe -x  "${g_AzureCLI_Installer}"  -qr
+		RemoveDependencies_func  "${g_AzureCLI_DependenciesTitle}"
 	fi
+}
 
 
-	#// ...
-	RemoveDependencies_func  "${g_DependenciesTitle}"
+#********************************************************************
+# Function: UnInstallWithConfirm_AzureCLI_func
+#********************************************************************
+function  UnInstallWithConfirm_AzureCLI_func()
+{
+	echo  ""
+	ColorEcho_func  "Uninstall Azure CLI ...\n"  "Green"
+	if [ ! -e "${g_AzureCLI_PATH}" ]; then
+		echo  "Already uninstalled"
+	fi
+	Pause_func
+	if [ -e "${g_AzureCLI_PATH}" ]; then
+
+		UnInstall_AzureCLI_func
+	fi
+}
+
+
+#********************************************************************
+# Function: SetUpVariables_Node_js_func
+#********************************************************************
+function  SetUpVariables_Node_js_func()
+{
+	if IsWindows_func; then
+		export  g_Node_js_Installer="${USERPROFILE}\Downloads\node-v${g_Node_js_Version}-x64.msi"
+	else
+		export  g_Node_js_Installer="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64.tar.xz"
+		export g_Node_js_FolderName="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64"
+	fi
+	if IsWindows_func; then
+		export  NODE_HOME="/c/Program Files/nodejs"
+		export  NODE_PATH="${NODE_HOME}/node_modules/npm/node_modules"
+		export  g_NodePrefix="${HOME}/AppData/Roaming/npm"
+		export  g_NodePrefixForWindows="${USERPROFILE}\AppData\Roaming\npm"
+	else
+		export  NODE_HOME="${g_ParentPathOfThisScript}/${g_Node_js_FolderName}"
+		export  NODE_PATH="${NODE_HOME}/lib/node_modules"
+		export  g_NodePrefix="${NODE_HOME}/lib"
+	fi
+	export  g_Node_js_DependenciesTitle="Node_js"
+	export  g_Node_js_Dependencies=( "Node.js" )
+
+	#// Add PATH values
+	if IsWindows_func; then
+		export  PATH="$PATH:${g_NodePrefix}:/c/Program Files/nodejs:${NODE_HOME}/node_modules/npm/bin"
+	else
+		export  PATH="$PATH:${NODE_HOME}/bin:${NODE_PATH}/.bin"
+	fi
 }
 
 
@@ -169,7 +275,7 @@ function  Uninstall_func()
 #    Install Node.js
 #
 # Description:
-#    This was synchronized with "Snippets\for-bash\installer\Node_js\install_Node_js.sh" in 2020-07-24 commit next to ddcd4da.
+#    This was synchronized with "Snippets\for-bash\installer\Node_js\scripts.sh" in 2020-08-24 commit next to 53ad2e99.
 #********************************************************************
 function  Install_Node_js_func()
 {
@@ -206,6 +312,7 @@ function  Install_Node_js_func()
 
 			tar Jxfv  "${g_Node_js_Installer}" > /dev/null
 		fi
+		AddDependencies_func  "${g_Node_js_DependenciesTitle}"  "${g_Node_js_Dependencies[@]}"
 	fi
 }
 
@@ -220,51 +327,30 @@ function  Uninstall_Node_js_func()
 
 		msiexec.exe -x  "${g_Node_js_Installer}" -qr
 	fi
+	RemoveDependencies_func  "${g_Node_js_DependenciesTitle}"
 
 	Clear_Node_js_func
 }
 
 
 #********************************************************************
-# Function: InstallAzureCLI_func
-#    Install Azure CLI
+# Function: UninstallWithConfirm_Node_js_func
 #********************************************************************
-function  InstallAzureCLI_func()
+function  UninstallWithConfirm_Node_js_func()
 {
-	if [ ! -e "${g_AzureCLIFolder}" ]; then
-
-		#// Guard
-		if [ ! -e "${g_AzureCLI_Installer}" ]; then
-			echo  ""
-			echo  "Download Azure CLI installer and copy it to this folder."
-			echo  "https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli-windows?view=azure-cli-latest"
-			echo  "Azure CLI ${g_AzureCLI_Version} \"${g_AzureCLI_Installer}\""
-			echo  ""
-			Error_func  "Not found Azure CLI ${g_AzureCLI_Version} installer at ${g_AzureCLI_Installer}"
-		fi
-
-
-		#// Install Azure CLI
+	if IsWindows_func; then
 		echo  ""
-		ColorEcho_func  "Install Azure CLI ...\n"  "Green"
-		if IsWindows_func; then
-			EchoNextCommand_func
-
-			msiexec.exe -i "${g_AzureCLI_Installer}" -qr
+		ColorEcho_func  "Uninstall up Node.js and node_modules folder ...\n"  "Green"
+		GetSharedDependencies_func  "${g_Node_js_DependenciesTitle}"  "${g_Node_js_Dependencies[@]}"
+			#// g_SharedDependencies = .
+		if [ -v g_SharedDependencies["Node.js"] ]; then
+			echo  "Skipped. Because Node.js is used by other modules"
 		fi
-	fi
-}
+		Pause_func
+		if [ ! -v g_SharedDependencies["Node.js"] ]; then
 
-
-#********************************************************************
-# Function: UninstallAzureCLI_func
-#********************************************************************
-function  UninstallAzureCLI_func()
-{
-	if [ -e "${g_AzureCLIFolder}" ]; then
-		EchoNextCommand_func
-
-		msiexec.exe -x  "${g_AzureCLI_Installer}"  -qr
+			Uninstall_Node_js_func
+		fi
 	fi
 }
 
@@ -292,41 +378,9 @@ function  Clear_Node_js_func()
 function  SetUpVariables_func()
 {
 	export  g_ParentPathOfThisScript="$( pwd )"
-
-	#// Set Node.js variables
-	if IsWindows_func; then
-		export  g_Node_js_Installer="${USERPROFILE}\Downloads\node-v${g_Node_js_Version}-x64.msi"
-	else
-		export  g_Node_js_Installer="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64.tar.xz"
-		export g_Node_js_FolderName="${HOME}/Downloads/node-v${g_Node_js_Version}-linux-x64"
-	fi
 	if IsWindows_func; then
 		export  HOME=$( cygpath --unix "${USERPROFILE}" )
-		export  NODE_HOME="/c/Program Files/nodejs"
-		export  NODE_PATH="${NODE_HOME}/node_modules/npm/node_modules"
-		export  g_NodePrefix="${HOME}/AppData/Roaming/npm"
-		export  g_NodePrefixForWindows="${USERPROFILE}\AppData\Roaming\npm"
-	else
-		export  NODE_HOME="${g_ParentPathOfThisScript}/${g_Node_js_FolderName}"
-		export  NODE_PATH="${NODE_HOME}/lib/node_modules"
-		export  g_NodePrefix="${NODE_HOME}/lib"
 	fi
-
-	#// Set Azure CLI variables
-	export  g_AzureCLI_Installer="${USERPROFILE}\\Downloads\\azure-cli-${g_AzureCLI_Version}.msi"
-
-	#// Set PATH variable
-	if IsWindows_func; then
-		export  PATH="$PATH:${g_NodePrefix}:/c/Program Files/nodejs:${NODE_HOME}/node_modules/npm/bin"
-	else
-		export  PATH="$PATH:${NODE_HOME}/bin:${NODE_PATH}/.bin"
-	fi
-	export  PATH="$PATH:${g_ParentPathOfThisScript}/node_modules/.bin"  #// func command of Azure Functions Core Tools
-	export  PATH="$PATH:${g_AzureCLIFolder}"  #// az command of Azure CLI
-
-	#// Show variables
-	ShowVariables_func
-	echo  "g_NodePrefix = ${g_NodePrefix}"
 }
 
 
@@ -341,6 +395,7 @@ function  ShowVariables_func()
 	echo  "    export NODE_HOME=\"${NODE_HOME}\""
 	echo  "    export NODE_PATH=\"${NODE_PATH}\""
 	echo  "    export PATH=\"${PATH}\""
+	echo  "    export g_NodePrefix = ${g_NodePrefix}"
 	echo  "-------------------------------------------------"
 }
 
@@ -351,6 +406,10 @@ function  ShowVariables_func()
 function  SetVariables_func()
 {
 	SetUpVariables_func
+	SetUpVariables_Node_js_func
+	SetUpVariables_AzureFunctionsCoreTools_func
+	SetUpVariables_AzureCLI_func
+
 	ShowVariables_func
 	pushd  "${g_StartInPath}" > /dev/null
 
@@ -370,7 +429,7 @@ function  SetVariables_func()
 # Section: bashlib
 #
 # Description:
-#    This was synchronized with bashlib in 2020-08-23 commit 79d70c42.
+#    This was synchronized with bashlib in 2020-08-24 commit next to 53ad2e99.
 #********************************************************************
 
 #********************************************************************
@@ -475,7 +534,7 @@ function  EchoNextTrap_func()
 #    None
 #
 # Example:
-#    > ColorEcho_func  "Pass."  "Green"
+#    > ColorEcho_func  "Pass.\n"  "Green"
 #********************************************************************
 function  ColorEcho_func()
 {
@@ -586,7 +645,6 @@ function  ColorText_func()
 			sequence="${sequence}${color_code};"
 		fi
 	done ; done_func $?
-	in_Text="$( echo "$in_Text" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
 
 	g_ReturnValue="${sequence}${in_Text}\e[m"
 }
@@ -676,7 +734,8 @@ function  ErrTrap_func()
 		if [ "$g_Err_Desc" == "" ];then
 			ColorText_func  "<ERROR/>"  "Red" "Bold"
 		else
-			ColorText_func  "$g_Err_Desc"  "Red" "Bold"
+			local  error_description="$( echo "$g_Err_Desc" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
+			ColorText_func  "$error_description"  "Red" "Bold"
 		fi
 		echo_e_func  "$g_ReturnValue" >&2
 		echo "Exit Status = $g_ExitStatus"  >&2

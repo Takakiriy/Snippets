@@ -164,7 +164,7 @@ function  EchoNextTrap_func()
 #    None
 #
 # Example:
-#    > ColorEcho_func  "Pass."  "Green"
+#    > ColorEcho_func  "Pass.\n"  "Green"
 #********************************************************************
 function  ColorEcho_func()
 {
@@ -275,7 +275,6 @@ function  ColorText_func()
 			sequence="${sequence}${color_code};"
 		fi
 	done ; done_func $?
-	in_Text="$( echo "$in_Text" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
 
 	g_ReturnValue="${sequence}${in_Text}\e[m"
 }
@@ -365,7 +364,8 @@ function  ErrTrap_func()
 		if [ "$g_Err_Desc" == "" ];then
 			ColorText_func  "<ERROR/>"  "Red" "Bold"
 		else
-			ColorText_func  "$g_Err_Desc"  "Red" "Bold"
+			local  error_description="$( echo "$g_Err_Desc" | sed -e "s/\\\\/\\\\\\\\/g" )"  #// Disable escape
+			ColorText_func  "$error_description"  "Red" "Bold"
 		fi
 		echo_e_func  "$g_ReturnValue" >&2
 		echo "Exit Status = $g_ExitStatus"  >&2
