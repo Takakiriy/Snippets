@@ -208,33 +208,52 @@ export function  clickRadioButton(manual, value, target) {
 }
 
 // getRowIndex
-export function  getRowIndex(cellElement) {
-	return  cellElement.parentsUntil("tbody").last().invoke("index")
+export function  getRowIndex(cellElement, index) {
+	if (!index) {
+		index = 0
+	}
+
+	return  cellElement.eq(index).parentsUntil("tbody").last().invoke("index")
 }
 
 // typeToInputInTable
-// Example: cmd.typeToInputInTable("「${contain} >> 電話番号」に${value}と入力します。", "太郎", "0120-000-000",
-//    "[data-test="table-phone-${iRow}"]")
+// Example: cmd.typeToInputInTable('「${contain} >> 電話番号」に${value}と入力します。', '太郎', '0120-000-000',
+//    '[data-test="table-phone-${iRow}"]')
+// Example: cmd.typeToInputInTable('${contain+1}行目の「電話番号」に${value}と入力します。', 0, '0120-000-000',
+//    '[data-test="table-phone-${iRow}"]')
 export function  typeToInputInTable(manual, containOrIndexedIt, value, getParameter) {
-	const  containArray = parseArrayCode(containOrIndexedIt)
-	const  contain = containArray.array
+	if (typeof containOrIndexedIt === 'string') {
+		const  containArray = parseArrayCode(containOrIndexedIt)
+		const  contain = containArray.array
 
-	getRowIndex(cy.get(`input[title="${contain}"]`)).then((iRow) => {
+		getRowIndex(cy.get(`input[title="${contain}"]`), containArray.index).then((iRow) => {
+			typeToInput(
+				manual.replace('${contain}', contain).replace('${value}', value),
+				value,
+				cy.get(getParameter.replace('${iRow}', iRow).replace('${iRow+1}', iRow + 1))
+		})
+	} else {
+		const iRow = containOrIndexedIt
 		typeToInput(
-			manual.replace("${contain}", contain).replace("${value}", value),
+			manual.replace('${contain}', iRow).replace('${contain+1}', iRow + 1).replace('${value}', value),
 			value,
-			cy.get(getParameter.replace("${iRow}", iRow).replace("${iRow+1}", iRow + 1))
-	})
+			cy.get(getParameter.replace('${iRow}', iRow).replace('${iRow+1}', iRow + 1))
+	}
 }
 
 // parseArrayCode
-// Example: const  arr = parseArrayCode("arr[1]");  arr.array === "arr";  arr.index === 0;
+// Example: const  arr = parseArrayCode("arr[1]");  arr.array === "arr";  arr.index === 1;
 function  parseArrayCode(arrayCode) {
 	const  match = /\[[0-9]+\]/g.exec(arrayCode)  // [n]
 	if (match) {
+		const  first = 0
+		const  beforeIndex = arrayCode.substr( 0,  match.index )
+		const  afterIndex = arrayCode.substr( match.index + match[first].length )
+		const  index = match[first].substr( 1,  match[first].length - 2 )
+
 		return {
-			array: arrayCode.slice( 0, match.index - 1 ) + arrayCode.slice( match.lastIndex ),
-			index: parseInt(arrayCode.slice( match.index, match.lastIndex ), 10),
+			array: beforeIndex + afterIndex,
+			index: parseInt(index, 10),
 		}
 	} else {
 		return {
