@@ -1,6 +1,4 @@
 ﻿/// <reference types="@cypress/fiddle" />
-import * as cmd from "../my-cmd.js"
-import * as lib from "../my-lib.js"
 
 const helloTest = {
   html: `
@@ -47,7 +45,7 @@ const helloTest = {
 	}
 
 	main()
-`
+  `
 }
 
 it('tests hello', () => {
