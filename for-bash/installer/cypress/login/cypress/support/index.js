@@ -16,5 +16,8 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
+// adds "cy.runExample()" command
+import '@cypress/fiddle'
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
