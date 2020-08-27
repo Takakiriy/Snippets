@@ -14,6 +14,9 @@ set -eE
 export  g_Node_js_Version="12.18.3"
 
 export  g_AzureCLI_Version="2.10.1"
+
+export  g_DotNET_Core_SDK_Version="3.1.401"
+export  g_DotNET_Core_SDK_UninstallerVersion="1.1.122401"
 #//==================================================================
 
 
@@ -31,7 +34,7 @@ function  Main_func()
 	if [ "$1" == ""  -o  "$1" == "setup" ]; then
 		SetUp_func
 	elif [ "$1" == "set-path" ]; then
-		SetVariables_func
+		SetVariables_func  "$2"
 	elif [ "$1" == "clean"  -o  "$1" == "cleanup" ]; then
 		CleanUp_func
 	elif [ "$1" == "uninstall" ]; then
@@ -52,6 +55,7 @@ function  SetUp_func()
 	SetUpVariables_Node_js_func
 	SetUpVariables_AzureFunctionsCoreTools_func
 	SetUpVariables_AzureCLI_func
+	SetUpVariables_DotNET_Core_SDK_func
 
 	#// Skip
 if false; then #// "Skipped"
@@ -59,6 +63,7 @@ echo "Skipped"  ;fi
 
 	#// Install
 	Install_Node_js_func
+	Install_DotNET_Core_SDK_func
 	Install_AzureCLI_func
 	Install_AzureFunctionsCoreTools_func
 }
@@ -84,11 +89,13 @@ function  Uninstall_func()
 	SetUpVariables_Node_js_func
 	SetUpVariables_AzureFunctionsCoreTools_func
 	SetUpVariables_AzureCLI_func
+	SetUpVariables_DotNET_Core_SDK_func
 
 
 	#// Uninstall
 	UnInstallWithConfirm_AzureFunctionsCoreTools_func
 	UnInstallWithConfirm_AzureCLI_func
+	Uninstall_DotNET_Core_SDK_func
 	UninstallWithConfirm_Node_js_func
 }
 
@@ -135,7 +142,7 @@ function  UnInstall_AzureFunctionsCoreTools_func()
 		EchoNextCommand_func
 
 		npm uninstall -g  azure-functions-core-tools
-		RemoveDependencies_func  "${g_AzureCLI_DependenciesTitle}"
+		RemoveDependencies_func  "${g_AzureFunctionsCoreTools_DependenciesTitle}"
 	fi
 }
 
@@ -233,6 +240,123 @@ function  UnInstallWithConfirm_AzureCLI_func()
 	if [ -e "${g_AzureCLI_PATH}" ]; then
 
 		UnInstall_AzureCLI_func
+	fi
+}
+
+
+#********************************************************************
+# Function: SetUpVariables_DotNET_Core_SDK_func
+#********************************************************************
+function  SetUpVariables_DotNET_Core_SDK_func()
+{
+	export  g_DotNET_Core_SDK_Installer="${USERPROFILE}\Downloads\dotnet-sdk-${g_DotNET_Core_SDK_Version}-win-x64.exe"
+	export  g_DotNET_Core_SDK_Uninstaller="${USERPROFILE}\Downloads\dotnet-core-uninstall-${g_DotNET_Core_SDK_UninstallerVersion}.msi"
+	export  g_DotNET_Core_SDK_Folder=$( cygpath --unix  "C:\\Program Files\\dotnet")
+	export  g_DotNET_Core_SDK_UninstallerFolder=$( cygpath --unix  "C:\\Program Files (x86)\\dotnet-core-uninstall")
+	export  g_DotNET_Core_SDK_DependenciesTitle="DotNET_Core_SDK"
+	export  g_DotNET_Core_SDK_Dependencies=( ".NET_Core_SDK" )
+}
+
+
+#********************************************************************
+# Function: Install_DotNET_Core_SDK_func
+#********************************************************************
+function  Install_DotNET_Core_SDK_func()
+{
+	if [ ! -e "${g_DotNET_Core_SDK_Folder}/dotnet.exe" ]; then
+
+		#// Guard
+		if [ ! -e "${g_DotNET_Core_SDK_Installer}" ]; then
+			echo  ""
+			echo  "Download .NET SDK installer and copy it to this folder."
+			echo  "https://docs.microsoft.com/dotnet/core/install/windows"
+			echo  ".NET SDK ${g_DotNET_Core_SDK_Version} \"${g_DotNET_Core_SDK_Installer}\""
+			echo  ""
+			Error_func  "Not found .NET SDK ${g_DotNET_Core_SDK_Version} installer at ${g_DotNET_Core_SDK_Installer}"
+		fi
+
+
+		#// Install .NET SDK
+		echo  ""
+		ColorEcho_func  "Install .NET SDK ...\n"  "Green"
+		EchoNextCommand_func
+
+		"${g_DotNET_Core_SDK_Installer}"  -quiet
+		AddDependencies_func  "${g_DotNET_Core_SDK_DependenciesTitle}"  "${g_DotNET_Core_SDK_Dependencies[@]}"
+	fi
+}
+
+
+#********************************************************************
+# Function: Uninstall_DotNET_Core_SDK_func
+#********************************************************************
+function  Uninstall_DotNET_Core_SDK_func()
+{
+	if [ -e "${g_DotNET_Core_SDK_Folder}/dotnet.exe" ]; then
+
+		#// Install .NET SDK Uninstaller
+		if [ ! -e "${g_DotNET_Core_SDK_UninstallerFolder}/dotnet-core-uninstall.exe" ]; then
+			CheckExistsUninstallerOf_DotNET_Core_SDK_func
+			EchoNextCommand_func
+
+			msiexec.exe -i  "${g_DotNET_Core_SDK_Uninstaller}" -qr
+		fi
+
+		#// Uninstall .NET SDK
+		echo "${g_DotNET_Core_SDK_UninstallerFolder}"
+		local  uninstaller=$( cygpath --windows  "${g_DotNET_Core_SDK_UninstallerFolder}/dotnet-core-uninstall.exe")
+		echo "${uninstaller}"
+		EchoNextCommand_func
+
+		powershell -command start-process "\"${uninstaller}\" \"remove ${g_DotNET_Core_SDK_Version}  -y --sdk\"" \
+			-verb runas -wait
+	fi
+
+	#// Uninstall .NET SDK Uninstaller
+	if [ -e "${g_DotNET_Core_SDK_UninstallerFolder}/dotnet-core-uninstall.exe" ]; then
+		CheckExistsUninstallerOf_DotNET_Core_SDK_func
+		EchoNextCommand_func
+
+		msiexec.exe -x  "${g_DotNET_Core_SDK_Uninstaller}" -qr
+	fi
+	RemoveDependencies_func  "${g_DotNET_Core_SDK_DependenciesTitle}"
+}
+
+
+#********************************************************************
+# Function: UninstallWithConfirm_DotNET_Core_SDK_func
+#********************************************************************
+function  UninstallWithConfirm_DotNET_Core_SDK_func()
+{
+	if IsWindows_func; then
+		echo  ""
+		ColorEcho_func  "Uninstall .NET Core SDK ...\n"  "Green"
+		GetSharedDependencies_func  "${g_DotNET_Core_SDK_DependenciesTitle}"  "${g_DotNET_Core_SDK_Dependencies[@]}"
+			#// g_SharedDependencies = .
+		if [ -v g_SharedDependencies[".NET_Core_SDK"] ]; then
+			echo  "Skipped. Because Node.js is used by other modules"
+		fi
+		Pause_func
+		if [ ! -v g_SharedDependencies[".NET_Core_SDK"] ]; then
+
+			Uninstall_DotNET_Core_SDK_func
+		fi
+	fi
+}
+
+
+#********************************************************************
+# Function: CheckExistsUninstallerOf_DotNET_Core_SDK_func
+#********************************************************************
+function  CheckExistsUninstallerOf_DotNET_Core_SDK_func()
+{
+	if [ ! -e "${g_DotNET_Core_SDK_Uninstaller}" ]; then
+		echo  ""
+		echo  "Download .NET SDK uninstaller and copy it to this folder."
+		echo  "https://github.com/dotnet/cli-lab/releases"
+		echo  ".NET SDK ${g_DotNET_Core_SDK_UninstallerVersion} \"${g_DotNET_Core_SDK_Uninstaller}\""
+		echo  ""
+		Error_func  "Not found .NET SDK Uninstaller ${g_DotNET_Core_SDK_UninstallerVersion} at ${g_DotNET_Core_SDK_Uninstaller}"
 	fi
 }
 
@@ -340,7 +464,7 @@ function  UninstallWithConfirm_Node_js_func()
 {
 	if IsWindows_func; then
 		echo  ""
-		ColorEcho_func  "Uninstall up Node.js and node_modules folder ...\n"  "Green"
+		ColorEcho_func  "Uninstall Node.js and node_modules folder ...\n"  "Green"
 		GetSharedDependencies_func  "${g_Node_js_DependenciesTitle}"  "${g_Node_js_Dependencies[@]}"
 			#// g_SharedDependencies = .
 		if [ -v g_SharedDependencies["Node.js"] ]; then
@@ -405,6 +529,12 @@ function  ShowVariables_func()
 #********************************************************************
 function  SetVariables_func()
 {
+	local  start_in_folder_path="$1"
+	if [ "${start_in_folder_path}" == "" ];then
+		start_in_folder_path="."
+	else
+		start_in_folder_path=$( cygpath  --unix  "${start_in_folder_path}")
+	fi
 	SetUpVariables_func
 	SetUpVariables_Node_js_func
 	SetUpVariables_AzureFunctionsCoreTools_func
@@ -419,6 +549,7 @@ function  SetVariables_func()
 		export NODE_PATH="${NODE_PATH}"
 		export PATH="${PATH}"
 		rm "${s_file_path}"
+		cd "${start_in_folder_path}"
 		__HERE_DOCUMENT__
 	echo "To set environment variables, type: source ${s_file_path}"
 	popd > /dev/null
