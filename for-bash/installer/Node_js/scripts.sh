@@ -21,12 +21,6 @@ export  g_Dependencies=( "Node.js" "npm-check-updates" )
 
 #********************************************************************
 # Function: Main_func
-#
-# Arguments:
-#    None
-#
-# Return Value:
-#    None
 #********************************************************************
 function  Main_func()
 {

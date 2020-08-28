@@ -24,12 +24,6 @@ export  g_UserOrAllUsers="User"
 
 #********************************************************************
 # Function: Main_func
-#
-# Arguments:
-#    None
-#
-# Return Value:
-#    None
 #********************************************************************
 function  Main_func()
 {

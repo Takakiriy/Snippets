@@ -15,19 +15,13 @@ export  g_Node_js_Version="12.18.3"
 
 export  g_AzureCLI_Version="2.10.1"
 
-export  g_DotNET_Core_SDK_Version="3.1.401"
+export  g_DotNET_Core_SDK_Version="2.1.809"
 export  g_DotNET_Core_SDK_UninstallerVersion="1.1.122401"
 #//==================================================================
 
 
 #********************************************************************
 # Function: Main_func
-#
-# Arguments:
-#    None
-#
-# Return Value:
-#    None
 #********************************************************************
 function  Main_func()
 {

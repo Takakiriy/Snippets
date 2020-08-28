@@ -30,12 +30,6 @@ export  g_Rollback="${True}"
 
 #********************************************************************
 # Function: Main_func
-#
-# Arguments:
-#    None
-#
-# Return Value:
-#    None
 #********************************************************************
 function  Main_func()
 {

@@ -21,12 +21,6 @@ PATH="${PATH}:/c/Program Files/Git/bin"
 
 #********************************************************************
 # Function: Main_func
-#
-# Arguments:
-#    None
-#
-# Return Value:
-#    None
 #********************************************************************
 function  Main_func()
 {

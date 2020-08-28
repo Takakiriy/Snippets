@@ -25,12 +25,6 @@ export  g_ProgramFiles_of_Node_js="/c/Program Files/nodejs"
 
 #********************************************************************
 # Function: Main_func
-#
-# Arguments:
-#    None
-#
-# Return Value:
-#    None
 #********************************************************************
 function  Main_func()
 {
