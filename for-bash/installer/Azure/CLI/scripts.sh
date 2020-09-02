@@ -184,7 +184,7 @@ function  Install_AzureCLI_func()
 		if [ ! -e "${g_AzureCLI_Installer}" ]; then
 			echo  ""
 			echo  "Download Azure CLI installer and copy it to this folder."
-			echo  "https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli-windows?view=azure-cli-latest"
+			echo  "https://azurecliprod.blob.core.windows.net/msi/azure-cli-${g_AzureCLI_Version}.msi"
 			echo  "Azure CLI ${g_AzureCLI_Version} \"${g_AzureCLI_Installer}\""
 			echo  ""
 			Error_func  "Not found Azure CLI ${g_AzureCLI_Version} installer at ${g_AzureCLI_Installer}"
@@ -210,13 +210,14 @@ function  Install_AzureCLI_func()
 function  UnInstall_AzureCLI_func()
 {
 	if [ -e "${g_AzureCLI_PATH}" ]; then
-		GetSharedDependencies_func  "${g_AzureCLI_DependenciesTitle}"  "${g_AzureCLI_Dependencies[@]}"
-			#// g_SharedDependencies = .
 		EchoNextCommand_func
 
 		msiexec.exe -x  "${g_AzureCLI_Installer}"  -qr
-		RemoveDependencies_func  "${g_AzureCLI_DependenciesTitle}"
+		EchoNextCommand_func
+
+		rm -rf  "${HOME}/.azure"
 	fi
+	RemoveDependencies_func  "${g_AzureCLI_DependenciesTitle}"
 }
 
 
@@ -227,11 +228,13 @@ function  UnInstallWithConfirm_AzureCLI_func()
 {
 	echo  ""
 	ColorEcho_func  "Uninstall Azure CLI ...\n"  "Green"
-	if [ ! -e "${g_AzureCLI_PATH}" ]; then
-		echo  "Already uninstalled"
+	GetSharedDependencies_func  "${g_AzureCLI_DependenciesTitle}"  "${g_AzureCLI_Dependencies[@]}"
+		#// g_SharedDependencies = .
+	if [ -v g_SharedDependencies["AzureCLI"] ]; then
+		echo  "Skipped. Because Azure CLI is used by other modules"
 	fi
 	Pause_func
-	if [ -e "${g_AzureCLI_PATH}" ]; then
+	if [ ! -v g_SharedDependencies["AzureCLI"] ]; then
 
 		UnInstall_AzureCLI_func
 	fi
