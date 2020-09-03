@@ -26,6 +26,10 @@ function  Main_func()
 		SetUp_func
 	elif [ "$1" == "clean"  -o  "$1" == "cleanup" ]; then
 		CleanUp_func
+	elif [ "$1" == "test" ]; then
+		Test_func
+	elif [ "$1" == "manual-test" ]; then
+		ManualTest_func
 	else
 		Error_func  "Unknown command name: $1"
 	fi
@@ -84,6 +88,30 @@ function  return_func()
 {
 	if [ "$g_Err_LineNo" == "???" ];then  g_Err_LineNo=${BASH_LINENO[0]}  ;fi
 	return  "$1"
+}
+
+
+#*********************************************************************
+# Function: Test_func
+#*********************************************************************
+function  Test_func()
+{
+	TestOfStringsHasTheString_func
+	TestOfCutAPartOfStringsAtTheString_func
+	echo  "Pass."
+}
+
+
+#*********************************************************************
+# Function: ManualTest_func
+#*********************************************************************
+function  ManualTest_func()
+{
+
+TestOfAddSystemPathVariable_func
+
+	#// TestOfAddSystemPathVariable_func
+	echo  "Pass."
 }
 
 
@@ -396,7 +424,7 @@ function  ErrTrap_func()
 				a1="${a1}（ヒント）現在の行番号は、${FUNCNAME[1]} 関数の最初で \"EchoOn_func\" を呼ぶと表示されます。${LF}"
 			fi
 			a1="${a1}（開発者向けヒント）ステップ実行したいときは、開始するところから \"debugger\" 関数を呼び出してください。 "
-			a1="${a1}下記コールツリーの最も下の関数が、\` \` を使って echo 出力を取得しているときは、取得しないようにすると、更にコール先の関数が表示されます。${LF}"
+			a1="${a1}下記コールツリーの最も下の関数が、"'$( )'" を使って echo 出力を取得しているときは、取得しないようにすると、更にコール先の関数が表示されます。${LF}"
 			ErrClass.getCallTree_method  "$g_Err_LineNo"  2  1
 			#// g_Err_ErrCallStack="$a1$g_ReturnValue$LF"
 			g_Err_ErrCallStack="$g_ReturnValue$LF"
@@ -729,12 +757,12 @@ function  GetFullPath_func()
 
 		while true; do   #//  "*/../" -> ""
 			echo  "$full_path" | grep  "[^/]*/\.\./" > /dev/null  || break
-			full_path=`echo "$full_path" | sed -e "s%[^/]*/\.\./%%"`
+			full_path=$( echo "$full_path" | sed -e "s%[^/]*/\.\./%%" )
 		done ; done_func $?
 
 		while true; do   #//  "/*/.." -> ""
 			echo  "$full_path" | grep  "[^/]*/[^/]*/\.\." > /dev/null  || break
-			full_path=`echo "$full_path" | sed -e "s%/[^/]*/\.\.$%%"`
+			full_path=$( echo "$full_path" | sed -e "s%/[^/]*/\.\.$%%" )
 		done ; done_func $?
 
 		while true; do  #//  "/./" -> "/"
@@ -746,7 +774,7 @@ function  GetFullPath_func()
 			StringClass.right_method  "$full_path"  2
 			if [ "$g_ReturnValue" != "/." ];then  break  ;fi
 			StringClass.replace_method  "$full_path"  "/./"  "/" ; full_path="$g_ReturnValue"
-			full_path=`echo "$full_path" | sed -e "s%/\.$%%"`
+			full_path=$( echo "$full_path" | sed -e "s%/\.$%%" )
 		done ; done_func $?
 
 		g_ReturnValue="$full_path"
@@ -779,6 +807,300 @@ function  GetParentFullPath_func()
 		LeftOfLastStr_func  "$in_Path"  "/" ; in_Path="$g_ReturnValue"  #// parent folder
 		if [ "$in_Path" == "" ];then  in_Path="/"  ;fi
 		g_ReturnValue="$in_Path"
+	fi
+}
+
+
+#*********************************************************************
+# Function: TestOfAddSystemPathVariable_func
+#*********************************************************************
+function  TestOfAddSystemPathVariable_func()
+{
+	echo  "AddSystemPathVariable_func"
+	AddSystemPathVariable_func  "/c/test"
+	if ! HasInSystemPathVariable_func  "/c/test"; then  Error_func  ;fi
+
+	echo  "RemoveSystemPathVariable_func"
+	RemoveSystemPathVariable_func  "/c/test"
+	if HasInSystemPathVariable_func  "/c/test"; then  Error_func  ;fi
+
+#//	AddSystemPathVariable_func  "%windir%/test"  #// Not supported
+}
+
+
+#*********************************************************************
+# Function: AddSystemPathVariable_func
+#*********************************************************************
+function  AddSystemPathVariable_func()
+{
+	local  new_folder_path="$1"
+	local  new_folder_path_for_Windows=$( cygpath --windows "${new_folder_path}" )
+	local  new_folder_path_for_Linux=$( cygpath --unix "${new_folder_path}" )
+
+	if ! HasInSystemPathVariable_func  "${new_folder_path}"; then
+
+		export  PATH="${new_folder_path_for_Linux}:${PATH}"
+		if IsWindows_func; then
+			local  exit_code=$( powershell -NoProfile -ExecutionPolicy unrestricted -Command "
+				Set-Variable -Name process -Value ( Start-Process PowerShell.exe -Verb runas \"
+
+					Write-Host  'Overwrite ' -NoNewLine
+					Write-Host  'Path' -ForegroundColor Red -NoNewLine
+					Write-Host  ' system environment variable'
+					Write-Host  'Press Enter key to continue ...' -NoNewLine
+					Read-Host
+
+					[Microsoft.Win32.Registry]::SetValue(
+						'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+						'Path',
+						'${new_folder_path_for_Windows};' +
+							(Get-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+							).GetValue('Path', '', 'DoNotExpandEnvironmentNames'),
+						[Microsoft.Win32.RegistryValueKind]::ExpandString)
+					Write-Host  'Done.'
+					Start-Sleep -s 1
+				\" -PassThru)
+				if (Test-Path variable:process) {
+					do {
+						Start-Sleep -Milliseconds 500
+					} until ((Get-Variable -Name process -ValueOnly).HasExited)
+					((Get-Variable -Name process -ValueOnly).ExitCode)
+				} else {
+					1  #// return an error
+				}" )
+			if [ "${exit_code}" != "0" ]; then
+				return  ${exit_code}
+			fi
+		fi
+	fi
+}
+
+
+#*********************************************************************
+# Function: AddUserPathVariable_func
+#*********************************************************************
+function  AddUserPathVariable_func()
+{
+Error_func  "not tested"
+	local  new_folder_path="$1"
+	new_folder_path_for_Windows=$( cygpath --windows "${new_folder_path}" )
+	new_folder_path_for_Linux=$( cygpath --unix "${new_folder_path}" )
+
+	if ! StringsHasTheString_func  "${PATH}"  "${new_folder_path_for_Linux}"  ":"; then
+
+		export  PATH="${new_folder_path_for_Linux}:${PATH}"
+		if IsWindows_func; then
+			local  command="[Environment]::SetEnvironmentVariable('Path','C:\New;'+\$env:Path,"  #// +\\\$env:Path
+			command="${command}[System.EnvironmentVariableTarget]::Machine)"
+
+			powershell -Command "[Microsoft.Win32.Registry]::SetValue( 'HKEY_CURRENT_USER\Environment',
+				'Path2',
+				'C:\Test1;' + (Get-Item -Path 'HKCU:\Environment').GetValue('Path','','DoNotExpandEnvironmentNames'),
+				[Microsoft.Win32.RegistryValueKind]::ExpandString)"
+
+		fi
+	fi
+}
+
+
+#*********************************************************************
+# Function: RemoveSystemPathVariable_func
+#*********************************************************************
+function  RemoveSystemPathVariable_func()
+{
+	local  removing_folder_path="$1"
+	local  removing_folder_path_for_Windows=$( cygpath --windows "${removing_folder_path}" )
+	local  removing_folder_path_for_Linux=$( cygpath --unix "${removing_folder_path}" )
+
+	if HasInSystemPathVariable_func  "${removing_folder_path}"; then
+
+		CutAPartOfStringsAtTheString_func  "${PATH}"  "${removing_folder_path_for_Linux}"  ":"
+		export  PATH="${g_ReturnValue}"
+
+		if IsWindows_func; then
+			local  current_path=$( powershell -Command "
+				(Get-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+				).GetValue('Path', '', 'DoNotExpandEnvironmentNames')" )
+
+			CutAPartOfStringsAtTheString_func  "${current_path}"  "${removing_folder_path_for_Windows}"  ";"
+			local  new_path="${g_ReturnValue}"
+
+			local  exit_code=$( powershell -NoProfile -ExecutionPolicy unrestricted -Command "
+				Set-Variable -Name process -Value ( Start-Process PowerShell.exe -Verb runas \"
+
+					Write-Host  'Overwrite ' -NoNewLine
+					Write-Host  'Path' -ForegroundColor Red -NoNewLine
+					Write-Host  ' system environment variable'
+					Write-Host  'Press Enter key to continue ...' -NoNewLine
+					Read-Host
+
+					[Microsoft.Win32.Registry]::SetValue(
+						'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+						'Path',
+						'${new_path}',
+						[Microsoft.Win32.RegistryValueKind]::ExpandString)
+					Write-Host  'Done.'
+					Start-Sleep -s 1
+				\" -PassThru)
+				if (Test-Path variable:process) {
+					do {
+						Start-Sleep -Milliseconds 500
+					} until ((Get-Variable -Name process -ValueOnly).HasExited)
+					((Get-Variable -Name process -ValueOnly).ExitCode)
+				} else {
+					1  #// return an error
+				}" )
+			if [ "${exit_code}" != "0" ]; then
+				return  ${exit_code}
+			fi
+		fi
+	fi
+}
+
+
+#*********************************************************************
+# Function: HasInSystemPathVariable_func
+#*********************************************************************
+function  HasInSystemPathVariable_func()
+{
+	local  folder_path="$1"
+	local  folder_path_for_Windows=$( cygpath --windows "${folder_path}" )
+	local  is_registered="true"
+	if IsWindows_func; then
+
+		local  current_path=$( powershell -Command "
+			(Get-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+			).GetValue('Path', '', 'DoNotExpandEnvironmentNames')" )
+
+		if ! StringsHasTheString_func  "${current_path}"  "${folder_path_for_Windows}"  ";"; then
+			is_registered="false"
+		fi
+	else
+		Error_func  "not supported"
+	fi
+	if [ "${is_registered}" == "true" ]; then
+		return ${True}
+	else
+		return ${False}
+	fi
+}
+
+
+#*********************************************************************
+# Function: TestOfStringsHasTheString_func
+#*********************************************************************
+function  TestOfStringsHasTheString_func()
+{
+	if ! StringsHasTheString_func  "Aa;B b;Cc"  "Aa"  ";"  ;then  Error_func;  fi
+	if ! StringsHasTheString_func  "Aa;B b;Cc"  "B b" ";"  ;then  Error_func;  fi
+	if ! StringsHasTheString_func  "Aa;B b;Cc"  "Cc"  ";"  ;then  Error_func;  fi
+	if   StringsHasTheString_func  "Aa;B b;Cc"  "xx"  ";"  ;then  Error_func;  fi
+	if   StringsHasTheString_func  "Aa;B b;Cc"  "AA"  ";"  ;then  Error_func;  fi
+	if ! StringsHasTheString_func  "Aa;B b;Cc"  ""    ";"  ;then  Error_func;  fi
+
+	if ! StringsHasTheString_func  "Aa:B b:Cc"  "Aa"  ":"  ;then  Error_func;  fi
+	if ! StringsHasTheString_func  "Aa:B b:Cc"  "B b" ":"  ;then  Error_func;  fi
+	if ! StringsHasTheString_func  "Aa:B b:Cc"  "Cc"  ":"  ;then  Error_func;  fi
+	if   StringsHasTheString_func  "Aa:B b:Cc"  "Ax"  ":"  ;then  Error_func;  fi
+
+	if ! StringsHasTheString_func  "Aa"  "Aa"  ";"  ;then  Error_func;  fi
+	if   StringsHasTheString_func  "Aa"  "xx"  ";"  ;then  Error_func;  fi
+}
+
+
+#*********************************************************************
+# Function: StringsHasTheString_func
+#
+# Arguments:
+#    in_WholeString - $1
+#    in_TheString   - $2
+#    in_Separator   - $3
+#
+# Return Value:
+#    $? - 0: exists, 1: not exists
+#*********************************************************************
+function  StringsHasTheString_func()
+{
+	local  in_WholeString="$1"
+	local  in_TheString="$2"
+	local  in_Separator="$3"
+
+	if [ "${in_TheString}" == "" ]; then
+		return  0  #// exists
+	else
+		local  is_matched="false"
+		local  oldIFS="$IFS"
+		IFS="${in_Separator}"
+
+		for  item  in ${in_WholeString[@]}; do  #// Splited by IFS
+			if [ "${item}" == "${in_TheString}" ]; then
+				is_matched="true"
+			fi
+		done
+		IFS="$oldIFS"
+		local  return_value=1  #// not exists
+		if [ "$is_matched" == "true" ];then
+			return_value=0  #// exists
+		fi
+		return  ${return_value}
+	fi
+}
+
+
+#*********************************************************************
+# Function: TestOfCutAPartOfStringsAtTheString_func
+#*********************************************************************
+function  TestOfCutAPartOfStringsAtTheString_func()
+{
+	CutAPartOfStringsAtTheString_func  "Aa;B b;Cc"  "Aa"  ";"
+	if [ "${g_ReturnValue}" != "B b;Cc" ]; then  Error_func;  fi
+
+	CutAPartOfStringsAtTheString_func  "Aa;B b;Cc"  "B b"  ";"
+	if [ "${g_ReturnValue}" != "Aa;Cc" ]; then  Error_func;  fi
+
+	CutAPartOfStringsAtTheString_func  "Aa;B b;Cc"  "Cc"  ";"
+	if [ "${g_ReturnValue}" != "Aa;B b" ]; then  Error_func;  fi
+
+	CutAPartOfStringsAtTheString_func  "Aa;B b;Cc"  "xx"  ";"
+	if [ "${g_ReturnValue}" != "Aa;B b;Cc" ]; then  Error_func;  fi
+
+	CutAPartOfStringsAtTheString_func  "Aa;B b;Cc"  "B"  ";"
+	if [ "${g_ReturnValue}" != "Aa;B b;Cc" ]; then  Error_func;  fi
+
+	CutAPartOfStringsAtTheString_func  "Aa"  "Aa"  ";"
+	if [ "${g_ReturnValue}" != "" ]; then  Error_func;  fi
+
+	CutAPartOfStringsAtTheString_func  "Aa:B b:Cc"  "Aa"  ":"
+	if [ "${g_ReturnValue}" != "B b:Cc" ]; then  Error_func;  fi
+}
+
+
+#*********************************************************************
+# Function: CutAPartOfStringsAtTheString_func
+#*********************************************************************
+function  CutAPartOfStringsAtTheString_func()
+{
+	local  in_WholeString="$1"
+	local  in_TheString="$2"
+	local  in_Separator="$3"
+
+	if [ "${in_TheString}" == "" ]; then
+		g_ReturnValue="${in_WholeString}"
+	else
+		g_ReturnValue=""
+		local  oldIFS="$IFS"
+		IFS="${in_Separator}"
+
+		for  item  in ${in_WholeString[@]}; do  #// Splited by IFS
+			if [ "${item}" != "${in_TheString}" ]; then
+				if [ "${g_ReturnValue}" == "" ]; then
+					g_ReturnValue="${item}"
+				else
+					g_ReturnValue="${g_ReturnValue}${in_Separator}${item}"
+				fi
+			fi
+		done
+		IFS="$oldIFS"
 	fi
 }
 
@@ -1823,13 +2145,13 @@ fi
 # Variable: LF
 #    Line feed
 #********************************************************************
-export  LF=`echo_e_func "\nx"`; LF="${LF:0:1}"
+export  LF=$( echo_e_func "\nx" ); LF="${LF:0:1}"
 
 
 #********************************************************************
 # Variable: Tab
 #********************************************************************
-export  Tab=`echo_e_func "\t"`
+export  Tab=$( echo_e_func "\t" )
 
 
 #********************************************************************

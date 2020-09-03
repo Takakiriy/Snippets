@@ -336,7 +336,7 @@ function  ErrTrap_func()
 				a1="${a1}（ヒント）現在の行番号は、${FUNCNAME[1]} 関数の最初で \"EchoOn_func\" を呼ぶと表示されます。${LF}"
 			fi
 			a1="${a1}（開発者向けヒント）ステップ実行したいときは、開始するところから \"debugger\" 関数を呼び出してください。 "
-			a1="${a1}下記コールツリーの最も下の関数が、\` \` を使って echo 出力を取得しているときは、取得しないようにすると、更にコール先の関数が表示されます。${LF}"
+			a1="${a1}下記コールツリーの最も下の関数が、"'$( )'" を使って echo 出力を取得しているときは、取得しないようにすると、更にコール先の関数が表示されます。${LF}"
 			ErrClass.getCallTree_method  "$g_Err_LineNo"  2  1
 			#// g_Err_ErrCallStack="$a1$g_ReturnValue$LF"
 			g_Err_ErrCallStack="$g_ReturnValue$LF"
@@ -486,12 +486,12 @@ function  GetFullPath_func()
 
 		while true; do   #//  "*/../" -> ""
 			echo  "$full_path" | grep  "[^/]*/\.\./" > /dev/null  || break
-			full_path=`echo "$full_path" | sed -e "s%[^/]*/\.\./%%"`
+			full_path=$( echo "$full_path" | sed -e "s%[^/]*/\.\./%%" )
 		done ; done_func $?
 
 		while true; do   #//  "/*/.." -> ""
 			echo  "$full_path" | grep  "[^/]*/[^/]*/\.\." > /dev/null  || break
-			full_path=`echo "$full_path" | sed -e "s%/[^/]*/\.\.$%%"`
+			full_path=$( echo "$full_path" | sed -e "s%/[^/]*/\.\.$%%" )
 		done ; done_func $?
 
 		while true; do  #//  "/./" -> "/"
@@ -503,7 +503,7 @@ function  GetFullPath_func()
 			StringClass.right_method  "$full_path"  2
 			if [ "$g_ReturnValue" != "/." ];then  break  ;fi
 			StringClass.replace_method  "$full_path"  "/./"  "/" ; full_path="$g_ReturnValue"
-			full_path=`echo "$full_path" | sed -e "s%/\.$%%"`
+			full_path=$( echo "$full_path" | sed -e "s%/\.$%%" )
 		done ; done_func $?
 
 		g_ReturnValue="$full_path"
@@ -915,13 +915,13 @@ fi
 # Variable: LF
 #    Line feed
 #********************************************************************
-export  LF=`echo_e_func "\nx"`; LF="${LF:0:1}"
+export  LF=$( echo_e_func "\nx" ); LF="${LF:0:1}"
 
 
 #********************************************************************
 # Variable: Tab
 #********************************************************************
-export  Tab=`echo_e_func "\t"`
+export  Tab=$( echo_e_func "\t" )
 
 
 #********************************************************************
