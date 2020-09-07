@@ -1593,6 +1593,9 @@ function  UnescapeJSON_func()
 #********************************************************************
 # Function: ToLF_func
 #    convert from CR+LF(stdin) to LF(stdout)
+#
+# Example:
+#    ToLF_func  < "${input_path}"  > "${output_path}"
 #********************************************************************
 function  ToLF_func()
 {

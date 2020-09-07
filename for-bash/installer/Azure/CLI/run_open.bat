@@ -1,6 +1,10 @@
 @echo off
 PATH=C:\Program Files\Git\usr\bin;%PATH%
-set this_folder=%~d0%~p0
-cd /d %this_folder%
-"C:\Program Files\Git\usr\bin\bash.exe"  scripts.sh  set-path  "%1"
-echo source.s & "C:\Program Files\Git\usr\bin\bash.exe" -c "source .s;  exec bash"
+
+set commands=
+set commands=%commands%  cd  $(cygpath --unix '%~d0%~p0');
+set commands=%commands%  ./scripts.sh  set-path;
+set commands=%commands%  echo  'source .s';  source .s;
+if not "%1" == ""  set commands=%commands%  cd  $(cygpath --unix '%1');
+
+start "no-title" "C:\Program Files\Git\git-bash.exe"  -c "%commands%  exec bash"
