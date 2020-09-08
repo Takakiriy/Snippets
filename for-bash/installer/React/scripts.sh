@@ -120,6 +120,7 @@ function  Install_React_func()
 
 	#// Skip
 if false; then #// "Skipped"
+echo "Skipped"  ;fi
 
 	if [ ! -e "${g_ReactBinFolderPath}" ]; then
 
@@ -140,15 +141,17 @@ if false; then #// "Skipped"
 		"${g_ReactBinFolderPath}/create-react-app"  "${application_name}"
 		EchoNextCommand_func
 
+		cp  "template/run_start.bat"  "${application_name}"
+		EchoNextCommand_func
+
 		rm -rf  "package-lock.json"
 		EchoNextCommand_func
 
 		rm -rf  "node_modules"
 	fi
-echo "Skipped"  ;fi
 
 	echo  ""
-	ColorEcho_func  "Please, type [npm run start in \"${application_name}\" folder]\n"  "Green"
+	ColorEcho_func  "Please, type [npm run start] or double click \"run_start.bat\" in \"${application_name}\" folder\n"  "Green"
 }
 
 
