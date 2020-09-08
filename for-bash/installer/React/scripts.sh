@@ -85,7 +85,6 @@ function  Uninstall_func()
 {
 	SetUpVariables_func
 	SetUpVariables_Node_js_func
-	SetUpVariables_React_func
 
 
 	#// Skip
@@ -94,7 +93,6 @@ echo "Skipped"  ;fi
 
 
 	#// Uninstall
-	UninstallWithConfirm_React_func
 	UninstallWithConfirm_Node_js_func
 }
 
@@ -122,7 +120,6 @@ function  Install_React_func()
 
 	#// Skip
 if false; then #// "Skipped"
-echo "Skipped"  ;fi
 
 	if [ ! -e "${g_ReactBinFolderPath}" ]; then
 
@@ -148,6 +145,10 @@ echo "Skipped"  ;fi
 
 		rm -rf  "node_modules"
 	fi
+echo "Skipped"  ;fi
+
+	echo  ""
+	ColorEcho_func  "Please, type [npm run start in \"${application_name}\" folder]\n"  "Green"
 }
 
 
