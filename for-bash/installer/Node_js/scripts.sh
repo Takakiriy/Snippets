@@ -13,9 +13,6 @@ set -eE
 #//==================================================================
 
 export  g_Node_js_Version="12.18.3"
-
-export  g_DependenciesTitle="test_application"
-export  g_Dependencies=( "Node.js" "npm-check-updates" )
 #//==================================================================
 
 
@@ -189,7 +186,7 @@ function  UninstallWithConfirm_Node_js_func()
 {
 	if IsWindows_func; then
 		echo  ""
-		ColorEcho_func  "Uninstall up Node.js and node_modules folder ...\n"  "Green"
+		ColorEcho_func  "Uninstall Node.js and node_modules folder ...\n"  "Green"
 		GetSharedDependencies_func  "${g_Node_js_DependenciesTitle}"  "${g_Node_js_Dependencies[@]}"
 			#// g_SharedDependencies = .
 		if [ -v g_SharedDependencies["Node.js"] ]; then
@@ -254,10 +251,14 @@ function  ShowVariables_func()
 #********************************************************************
 function  SetVariables_func()
 {
+	local  start_in_folder_path="$1"
+	if [ "${start_in_folder_path}" == "" ];then
+		start_in_folder_path="."
+	else
+		start_in_folder_path=$( cygpath  --unix  "${start_in_folder_path}")
+	fi
 	SetUpVariables_func
 	SetUpVariables_Node_js_func
-	SetUpVariables_AzureFunctionsCoreTools_func
-	SetUpVariables_AzureCLI_func
 
 	ShowVariables_func
 	pushd  "${g_StartInPath}" > /dev/null
@@ -268,6 +269,7 @@ function  SetVariables_func()
 		export NODE_PATH="${NODE_PATH}"
 		export PATH="${PATH}"
 		rm "${s_file_path}"
+		cd "${start_in_folder_path}"
 		__HERE_DOCUMENT__
 	echo "To set environment variables, type: source ${s_file_path}"
 	popd > /dev/null
