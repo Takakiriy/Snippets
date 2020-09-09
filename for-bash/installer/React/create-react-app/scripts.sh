@@ -141,7 +141,7 @@ echo "Skipped"  ;fi
 		"${g_ReactBinFolderPath}/create-react-app"  "${application_name}"
 		EchoNextCommand_func
 
-		cp  "template/run_start.bat"  "${application_name}"
+		cp  "template/"*  "${application_name}"
 		EchoNextCommand_func
 
 		rm -rf  "package-lock.json"
