@@ -15,14 +15,17 @@
 	- [git_clone_commit](for-bash/git_clone_commit/git_clone_commit.sh) - 特定のコミットの Git クローン
 	- installer
 		- Azure
-			- [CLI](for-bash/installer/Azure/CLI/scripts.sh)
+			- [CLI](for-bash/installer/Azure/CLI/)
 		- cypress - E2E 自動テスト ツール
-			- [base](for-bash/installer/cypress/base/scripts.sh)
-			- [+ log in](for-bash/installer/cypress/login/scripts.sh)
-		- [Node.js](for-bash/installer/Node_js/scripts.sh)
+			- [base](for-bash/installer/cypress/base/)
+			- [+ log in](for-bash/installer/cypress/login/)
+		- [Node.js](for-bash/installer/Node_js/)
+		- React
+			- [created_React_project](for-bash/installer/React/created_React_project/)
+			- [create-react-app](for-bash/installer/React/create-react-app/)
 		- Visual Studio Code
-			- [base](for-bash/installer/VisualStudioCode/base/install_VisualStudioCode.sh)
-			- [+ TypeScript](for-bash/installer/VisualStudioCode/TypeScript/install_TypeScript_VSCode.sh)
+			- [base](for-bash/installer/VisualStudioCode/base/)
+			- [+ TypeScript](for-bash/installer/VisualStudioCode/TypeScript/)
 
 
 ## インストール方法 (Windows)

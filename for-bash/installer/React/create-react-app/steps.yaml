@@ -1,8 +1,5 @@
-﻿# React アプリケーション
+﻿# create-react-app
 
-React アプリケーションをローカルで編集するには:
-    - run_install.bat をダブルクリックすると、環境が構築され、ローカル（Dockerのホスト）で Web サーバーが起動します
-    - run_start.bat をダブルクリックすると、ローカル（Dockerのホスト）で Web サーバーが起動します
-
-リポジトリに入れないファイルを削除するには:
-    - run_clean.bat をダブルクリックします
+React のプロジェクトを生成するには:
+    - scripts.sh の中の g_ReactApplicationName 変数の値を編集します
+    - run_install.bat をダブルクリックします
