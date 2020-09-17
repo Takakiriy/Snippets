@@ -262,3 +262,20 @@ function  parseArrayCode(arrayCode) {
 		}
 	}
 }
+
+// uploadFile
+// Example: cmd.uploadFile( cy.get('#input-file'), 'README.txt')
+export function  uploadFile(target, fileName, fileType) {
+	target.then( (subject) => {
+		cy.fixture(fileName, 'base64')
+			.then(Cypress.Blob.base64StringToBlob)
+			.then( (blob) => {
+				cy.log(blob);
+				const el = subject[0];
+				const testFile = new File([blob], fileName, { type: fileType });
+				const dataTransfer = new DataTransfer();
+				dataTransfer.items.add(testFile);
+				el.files = dataTransfer.files;
+			});
+	});
+}
