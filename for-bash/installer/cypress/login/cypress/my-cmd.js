@@ -169,6 +169,24 @@ export function  writeToManual(text) {
 
 var  firstWriteToManual = true
 
+// waitForAnimation
+// Example: cmd.waitForAnimation('[data-test="user-mail-address"]')
+export function  waitForAnimation( getParameter ) {
+	cy.get(getParameter).should('be.visible')
+	cy.get(getParameter).then( (elements) => {
+		const  element = elements[0];
+		let    old = element.getBoundingClientRect();
+		for (var i = 0; i < 10; i++) {
+			cy.wait(100);
+			const  new_ = element.getBoundingClientRect();
+			if ( old.x !== new_.x  ||  old.x !== new_.y ) {
+				break;
+			}
+			old = new_;
+		}
+	})
+}
+
 // typeToInput
 // Example: cmd.typeToInput("  - 「売上金額」に${value}と入力します。", "99,999,999", cy.get("#uriage"))
 export function  typeToInput(manual, value, target) {
@@ -185,6 +203,15 @@ export function  typeToInput(manual, value, target) {
 export function  clickButton(manual, buttonLabel, target) {
 	writeToManual( manual.replace("${value}", "[ " + buttonLabel + " ]" )
 	target.contains(buttonLabel).click()
+}
+
+// clickCloseModalButton
+// Example: cmd.clickCloseModalButton("  - ～のモーダルを閉じます。",  '[data-test="close-button"]')
+export function  clickCloseModalButton(manual, getParameter) {
+	writeToManual( manual )
+	cy.get(getParameter).should('be.visible')
+	cy.get(getParameter).click()
+	cy.get(getParameter).should('be.not.visible')
 }
 
 // click
@@ -261,6 +288,24 @@ function  parseArrayCode(arrayCode) {
 			index: 0,
 		}
 	}
+}
+
+// isAboutTheSameTimeInJapanese
+// Example: const now = new Date();  cmd.isAboutTheSameTimeInJapanese( cy.get('[data-test=date-0]'), now, 5 )
+export function  isAboutTheSameTimeInJapanese( target, minExpectedTimeDate, secondError ) {
+	const  localFormat = 'YYYY年 MM月 DD日 kk:mm';
+	let    minDate = Cypress.moment(minExpectedTimeDate)
+	minDate = Cypress.moment(minDate.format(localFormat), localFormat) // Cut seconds
+	const  maxDate = Cypress.moment(minDate).add( secondError, 'seconds')
+	target.should( (element) => {
+		const  targetString = element.text().trim()
+		const  targetDate = Cypress.moment( targetString, localFormat )
+
+		expect(
+			targetDate.isBetween( minDate, maxDate, undefined, '[]' ),
+			`${targetDate.format()} should be between ${minDate.format()} and ${maxDate.format()}`
+			).to.be.true
+	})
 }
 
 // uploadFile
