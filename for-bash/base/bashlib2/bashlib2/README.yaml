@@ -1,0 +1,14 @@
+Test:
+    Windows:
+        bash case:
+            VSCode >> Terminal >> Git bash
+            cd __Project__
+            ./bashlib_test.sh
+        PowerShell case: |
+            VSCode >> Terminal >> PowerShell
+            cd __Project__
+            & "C:\Program Files\Git\bin\bash" bashlib_test.sh
+    Linux and mac:
+        VSCode >> Terminal
+        cd __Project__
+        ./bashlib_test.sh
