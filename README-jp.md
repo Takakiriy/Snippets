@@ -11,6 +11,7 @@
 
 - for-bash
 	- base
+		- [bashlib2](for-bash/base/bashlib2/bashlib2/bashlib_min.sh) - bash のシェル スクリプト ファイルの基本部分 バージョン 2
 		- [bashlib](for-bash/base/bashlib/Example_without_inc.sh) - 効率よくデバッグもできる bash のシェル スクリプト ファイルの基本部分
 	- [git_clone_commit](for-bash/git_clone_commit/git_clone_commit.sh) - 特定のコミットの Git クローン
 	- installer

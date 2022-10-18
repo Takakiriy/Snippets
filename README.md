@@ -8,6 +8,7 @@ Snippets are versioned here.
 
 - for-bash
 	- base
+		- [bashlib2](for-bash/base/bashlib2/bashlib2/bashlib_min.sh) - A basic part of the bash shell script file version 2
 		- [bashlib](for-bash/base/bashlib/Example_without_inc.sh) - A basic part of the bash shell script file that also allows for efficient debugging
 	- [git_clone_commit](for-bash/git_clone_commit/git_clone_commit.sh) - Git clone a specific commit
 	- installer
