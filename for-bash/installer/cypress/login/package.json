@@ -7,7 +7,7 @@
     "license": "ISC",
     "private": false,
     "devDependencies": {
-        "@cypress/fiddle": "^1.18.2",
+        "@cypress/fiddle": "^1.19.3",
         "@types/node": "^13.13.15",
         "cypress": "^4.12.1",
         "typescript": "^3.9.7"
