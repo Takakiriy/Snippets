@@ -9,7 +9,7 @@
 
 function  Main() {
     echo  "Current Folder: ${PWD}"
-    #// example:  RestoreFolder  'C:\Users\____\Desktop\source'  ${HOME}'/_destination'
+    #// example:  RestoreFolder  '/mnt/c/Users/____/Desktop/source'  ${HOME}'/_destination'
     echo  "Target folders have been restored."
 }
 
@@ -48,17 +48,6 @@ function  CopyFolder() {
     else
         ls -a "${source}" | grep -v  -e "^\.$"  -e "^\.\.$" | xargs  -I {} \
             cp -Rap  "${source}/{}"  "${destination}/"
-    fi
-}
-
-function  CutLastOf() {
-    local  wholeString="$1"
-    local  lastExpected="$2"
-
-    if [ "${wholeString:${#wholeString}-${#lastExpected}:${#lastExpected}}" == "${lastExpected}" ]; then
-        echo  "${wholeString:0:${#wholeString}-${#lastExpected}}"
-    else
-        echo  "${wholeString}"
     fi
 }
 
