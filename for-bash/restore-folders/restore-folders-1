@@ -1,0 +1,96 @@
+#!/bin/bash
+# You can execute this script by this full path.
+# e.g.)
+#     if [ "${USERPROFILE}" == "" ]; then  #// for WSL2
+#         export USERPROFILE="/mnt/c/Users/$( cmd.exe /c 'echo %USERNAME%' )";
+#         export USERPROFILE="${USERPROFILE:0:${#USERPROFILE}-1}"  #// Cut last CR
+#     fi
+#     ${USERPROFILE}/Desktop/new-commit/bin/restore-folders-1
+
+function  Main() {
+    echo  "Current Folder: ${PWD}"
+    #// example:  RestoreFolder  'C:\Users\____\Desktop\source'  ${HOME}'/_destination'
+    echo  "Target folders have been restored."
+}
+
+function  RestoreFolder() {
+    local  source=$( ResolvePath "$1" )
+    local  destination=$( ResolvePath "$2" )
+
+    mkdir -p  "${destination}"
+    ToEmptyFolder  "${destination}"
+    CopyFolder  "${source}"  "${destination}"
+}
+
+function  ToEmptyFolder() {
+    local  folder="$1"
+
+    ls -a "${folder}" | grep -v  -e "^\.$"  -e "^\.\.$" | xargs  -I {} \
+        rm -rf  "${folder}/{}"
+}
+
+function  CopyFolder() {
+    local  source="$1"
+    local  destination="$2"
+    local  ignoreDotGit="$3"  #// ${True}, ${False}(default)
+    local  excludeOption="--exclude=./.git"
+    source="$( CutLastOf  "${source}"  "/" )"
+    destination="$( CutLastOf  "${destination}"  "/" )"
+    if [ "${ignoreDotGit}" != ""  -a  "${ignoreDotGit}" != "${excludeOption}" ]; then
+        TestError  "Bad option: ${ignoreDotGit}"
+        return  "${False}"
+    fi
+
+    mkdir -p  "${destination}"
+    if [ "${ignoreDotGit}" == "${excludeOption}" ]; then
+        ls -a "${source}" | grep -v  -e "^\.git$"  -e "^\.$"  -e "^\.\.$" | xargs  -I {} \
+            cp -Rap  "${source}/{}"  "${destination}/"
+    else
+        ls -a "${source}" | grep -v  -e "^\.$"  -e "^\.\.$" | xargs  -I {} \
+            cp -Rap  "${source}/{}"  "${destination}/"
+    fi
+}
+
+function  CutLastOf() {
+    local  wholeString="$1"
+    local  lastExpected="$2"
+
+    if [ "${wholeString:${#wholeString}-${#lastExpected}:${#lastExpected}}" == "${lastExpected}" ]; then
+        echo  "${wholeString:0:${#wholeString}-${#lastExpected}}"
+    else
+        echo  "${wholeString}"
+    fi
+}
+
+function  CutLastOf() {
+    local  wholeString="$1"
+    local  lastExpected="$2"
+
+    if [ "${wholeString:${#wholeString}-${#lastExpected}:${#lastExpected}}" == "${lastExpected}" ]; then
+        echo  "${wholeString:0:${#wholeString}-${#lastExpected}}"
+    else
+        echo  "${wholeString}"
+    fi
+}
+
+function  ResolvePath() {
+    local  path_="$1"
+
+    path_="$( echo "${path_}" | sed -e 's/\\/\//g' | sed -e 's/^C:/c:/' )"  #// replace to / and c:
+
+    if [ "${mnt_c}" == "" ]; then
+        export  mnt_c="/mnt/c";  if [ ! -e "/mnt/c" ]; then  export  mnt_c="c:"  ;fi
+    fi
+    if [ "${path_:0:3}" == "c:/"  -o  "${path_:0:3}" == "/c/" ]; then
+        path_="${mnt_c}/${path_:3}"
+    elif [ "${path_:0:7}" == "/mnt/c/" ]; then
+        path_="${mnt_c}/${path_:7}"
+    fi
+
+    echo  "${path_}"
+}
+
+True=0
+False=1
+
+Main  "$@"
