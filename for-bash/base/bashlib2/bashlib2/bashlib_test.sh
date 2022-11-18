@@ -37,42 +37,63 @@ function  Pause() {
 }
 
 function  Test_ErrorIfLastIs() {
-    local  output="$( Test_Sub_ErrorIfLastIs )"
+
+    local  output="$( Test_Sub1_ErrorIfLastIs )"
     local  answer="$( echo -e 'OK\nstdout\n(ERROR)\n' )"
     if [ "${output}" != "${answer}" ]; then
-        TestError  "ERROR in Test_ErrorIfLastIs"
+        TestError  "ERROR in Test_ErrorIfLastIs 1"
+    fi
+
+    local  output="$( Test_Sub2_ErrorIfLastIs )"
+    local  answer="$( echo -e '(error_symbol) OK\nPass\n' )"
+    if [ "${output}" != "${answer}" ]; then
+        TestError  "ERROR in Test_ErrorIfLastIs 2"
     fi
 }
 
-function  Test_Sub_ErrorIfLastIs() {
+function  Test_Sub1_ErrorIfLastIs() {
     local  output=""
 
     output="$( echo "OK" || echo "(ERROR)" )"
     echo  "${output}"
-    ErrorIfLastIs  "(ERROR)"  "${output}"
+    ErrorIfLastIs  "${output}"  "(ERROR)"
 
     output="$( TestReturn1 || echo "(ERROR)" )"
     echo  "${output}"
-    ErrorIfLastIs  "(ERROR)"  "${output}"
+    ErrorIfLastIs  "${output}"  "(ERROR)"
 
     echo  "not reach here"
 }
 
-function  ErrorIfLastIs() {
-    local  tag="$1"
-    local  output="$2"
+function  Test_Sub2_ErrorIfLastIs() {
+    local  output=""
 
-    local  last="${output:${#output}-${#tag}:${#tag}}"
+    output="$( echo "(error_symbol) OK" || echo "(error_symbol)" )"
+    echo  "${output}"
+    ErrorIfLastIs  "${output}"  "(error_symbol)"
 
-    if [ "${last}" == "${tag}" ]; then
-        exit  2
-    fi
+    echo  "Pass"
 }
 
 function  TestReturn1()
 {
     echo  "stdout"
 	return  1
+}
+
+# ErrorIfLastIs
+#     Error check in $( )
+#     variable="$( command  || echo "(ERROR)" )"
+#     ErrorIfLastIs  "${output}"  "(ERROR)"
+function  ErrorIfLastIs() {
+    local  output="$1"
+    local  tag="$2"
+
+    local  last="${output:${#output}-${#tag}:${#tag}}"
+
+    if [ "${last}" == "${tag}" ]; then
+        exit  2
+    fi
 }
 
 function  TestError() {
