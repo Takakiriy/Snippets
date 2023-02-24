@@ -83,8 +83,9 @@ function  TestReturn1()
 
 # ErrorIfLastIs
 #     Error check in $( )
+# Example:
 #     variable="$( command  || echo "(ERROR)" )"
-#     ErrorIfLastIs  "${output}"  "(ERROR)"
+#     ErrorIfLastIs  "${variable}"  "(ERROR)"
 function  ErrorIfLastIs() {
     local  output="$1"
     local  tag="$2"
