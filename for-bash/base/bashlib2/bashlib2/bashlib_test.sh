@@ -81,6 +81,20 @@ function  TestReturn1()
 	return  1
 }
 
+# LastIs
+#     Check in $( )
+# Example:
+#     variable="$( command  || echo "(ERROR)" )"
+#     if LastIs  "${variable}"  "(ERROR)"; then
+function  LastIs() {
+    local  output="$1"
+    local  tag="$2"
+
+    local  last="${output:${#output}-${#tag}:${#tag}}"
+
+    [ "${last}" == "${tag}" ]
+}
+
 # ErrorIfLastIs
 #     Error check in $( )
 # Example:
