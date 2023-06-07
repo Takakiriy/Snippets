@@ -1,11 +1,11 @@
 #!/bin/bash
 #// Character Encoding: "WHITE SQUARE" U+25A1 is □.
-set -eE  #// -eE option breaks execution, when an error was occurred.
 
-function  AllTest() {
+function  Main() {
     Test_Min
     Test_Pause
     Test_ErrorIfLastIs
+    Test_TestErrorIfMatched
     EndOfTest
 }
 
@@ -96,7 +96,7 @@ function  LastIs() {
 }
 
 # ErrorIfLastIs
-#     Error check in $( )
+#     Check command exit code or function return code in $( )
 # Example:
 #     variable="$( command  || echo "(ERROR)" )"
 #     ErrorIfLastIs  "${variable}"  "(ERROR)"
@@ -111,23 +111,107 @@ function  ErrorIfLastIs() {
     fi
 }
 
+# ExitIfMatched
+#     Check function return code or function exit code in $( )
+# Example:
+#     local  out="$(x="$( command )" && echo "$x" || echo "(ERROR:$?)" )"
+#     ExitIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
+function  ExitIfMatched() {
+    local  output="$1"
+    local  regularExpression="$2"
+
+    if [[ "${output}" =~ ${regularExpression} ]]; then
+        local  exitCode="$( echo "${output}"  |  sed -E  's/'"${regularExpression}"'/\1/')"
+        exit  "${exitCode}"
+    fi
+}
+
+function  Test_TestErrorIfMatched() {
+    test  "${ErrorCount}" == 0  ||  Error
+
+    local  out="$(x="$( Test_Sub11_Exit )" && echo "$x" || echo "(ERROR:$?)" )"
+    TestErrorIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
+    test  "${ErrorCount}" == 1  ||  Error
+
+    ErrorCount=0
+}
+
+function  Test_Sub11_Exit() {
+    Error  "in Test_Sub11_Exit"
+}
+
+# TestErrorIfMatched
+#     Count up "ErrorCount" if function return code or function exit code in $( ) is not 0
+# Example:
+#     local  out="$(x="$( command )" && echo "$x" || echo "(ERROR:$?)" )"
+#     TestErrorIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
+function  TestErrorIfMatched() {
+    local  output="$1"
+    local  regularExpression="$2"
+    local  errorMessage="$3"
+
+    if [[ "${output}" =~ ${regularExpression} ]]; then
+        local  exitCode="$( echo "${output}"  |  sed -E  's/'"${regularExpression}"'/\1/')"
+        TestError  "${errorMessage}"
+    fi
+}
+
+function  EchoSubTest() {
+    local  message="$1"
+    if [ "${TestCaseName}" == "" ]; then
+        local  name=""
+    else
+        local  name="  (${TestCaseName})"
+    fi
+
+    echo  "${message}${name}"
+}
+
+function  EchoEndOfTest() {
+    local  name="$1"
+    if [ "${name}" != "" ]; then
+        TestCaseName="${name}"
+    fi
+
+    EchoSubTest  "ErrorCount: ${ErrorCount}"
+    if [ "${ErrorCount}" == 0 ]; then
+        EchoSubTest  "Pass."
+    fi
+}
+
 function  TestError() {
     local  errorMessage="$1"
+    if [ "${errorMessage}" == "" ]; then
+        errorMessage="ERROR: a test error"
+    fi
     if [ "${ErrorCountBeforeStart}" == "${NotInErrorTest}" ]; then
 
-        echo  "${errorMessage}"
+        EchoSubTest  "${errorMessage}"
     fi
     LastErrorMessage="${errorMessage}"
     ErrorCount=$(( ${ErrorCount} + 1 ))
 }
 ErrorCount=0
 LastErrorMessage=""
+TestCaseName=""
 
 function  IgnoreError() {
     return 0
 }
 
+function  Error() {
+    local  errorMessage="$1"
+    local  exitCode="$2"
+    if [ "${errorMessage}" == "" ]; then
+        errorMessage="ERROR"
+    fi
+    if [ "${exitCode}" == "" ]; then  exitCode=2  ;fi
+
+    echo  "${errorMessage}" >&2
+    exit  "${exitCode}"
+}
+
 export  True=0  #// 0 is same as the specifiation of Linux bash "test" command
 export  False=1  #// Not 0 is same as the specifiation of Linux bash "test" command
 
-AllTest  "$@"
+Main  "$@"
