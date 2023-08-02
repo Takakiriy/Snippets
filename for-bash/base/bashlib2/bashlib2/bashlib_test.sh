@@ -36,6 +36,12 @@ function  Pause() {
     read  -p "$1>"  key
 }
 
+function  RunAfterPause() {
+    echo  "$ $( GetArgumentsString  "$@" )"  >&2
+    read  -p "To continue, press Enter: "  dummyVariable
+    "$@"
+}
+
 function  Test_ErrorIfLastIs() {
 
     local  output="$( Test_Sub1_ErrorIfLastIs )"
