@@ -187,12 +187,13 @@ function  EchoEndOfTest() {
 
 function  TestError() {
     local  errorMessage="$1"
+    local  dateTime="$2"  #// optional
     if [ "${errorMessage}" == "" ]; then
         errorMessage="ERROR: a test error"
     fi
     if [ "${ErrorCountBeforeStart}" == "${NotInErrorTest}" ]; then
 
-        EchoSubTest  "${errorMessage}"
+        EchoWithBreadcrumb  "${errorMessage}"  "${dateTime}"
     fi
     LastErrorMessage="${errorMessage}"
     ErrorCount=$(( ${ErrorCount} + 1 ))
