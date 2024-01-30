@@ -214,7 +214,7 @@ function  Error() {
     fi
     if [ "${exitCode}" == "" ]; then  exitCode=2  ;fi
 
-    echo  "${errorMessage}" >&2
+    EchoWithBreadcrumb  "${errorMessage}"  >&2
     exit  "${exitCode}"
 }
 
