@@ -104,7 +104,7 @@ function  LastIs() {
 # ErrorIfLastIs
 #     Check command exit code or function return code in $( )
 # Example:
-#     variable="$( command  || echo "(ERROR)" )"
+#     variable="$( command  ||  echo "(ERROR)" )"
 #     ErrorIfLastIs  "${variable}"  "(ERROR)"
 function  ErrorIfLastIs() {
     local  output="$1"
