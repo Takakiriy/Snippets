@@ -1,6 +1,4 @@
 #!/bin/bash
-#// Character Encoding: "WHITE SQUARE" U+25A1 is □.
-set -eE  #// -eE option breaks execution, when an error was occurred.
 
 function  Main()
 {
@@ -35,8 +33,5 @@ function  Error() {
     echo  "${errorMessage}"
     exit  2
 }
-
-True=0  #// 0 is same as the specifiation of Linux bash "test" command
-False=1  #// Not 0 is same as the specifiation of Linux bash "test" command
 
 Main  "$@"
