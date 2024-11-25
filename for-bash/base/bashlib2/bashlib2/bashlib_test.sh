@@ -215,6 +215,9 @@ function  Error() {
     if [ "${exitCode}" == "" ]; then  exitCode=2  ;fi
 
     EchoWithBreadcrumb  "${errorMessage}"  >&2
+    if [ "${MSYSTEM}" == "MINGW64" ]; then
+        echo  "[Advice] Git bash is flaky on Windows. Install WSL2 and input the command: wsl __CommadAndParameters__"
+    fi
     exit  "${exitCode}"
 }
 
