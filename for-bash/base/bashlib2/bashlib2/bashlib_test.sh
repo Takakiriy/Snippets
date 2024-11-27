@@ -206,6 +206,13 @@ function  IgnoreError() {
     return 0
 }
 
+#// simple version
+function  Error() {
+    echo  "$1"  >&2
+    exit 2
+}
+
+#// full version
 function  Error() {
     local  errorMessage="$1"
     local  exitCode="$2"
