@@ -146,12 +146,10 @@ function  Test_Sub11_Exit() {
     Error  "in Test_Sub11_Exit"
 }
 
-# TestErrorIfMatched
-#     Count up "ErrorCount" if function return code or function exit code in $( ) is not 0
-# Example:
-#     local  out="$(x="$( command )" && echo "$x" || echo "(ERROR:$?)" )"
-#     TestErrorIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
-function  TestErrorIfMatched() {
+function  TestErrorIfMatched() {  #// Count up "ErrorCount" if function return code or function exit code in $( ) is not 0
+    # Example:
+    #     local  out="$(x="$(  command  )" && echo "$x" || echo "(ERROR:$?)" )"
+    #     TestErrorIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
     local  output="$1"
     local  regularExpression="$2"
     local  errorMessage="$3"
