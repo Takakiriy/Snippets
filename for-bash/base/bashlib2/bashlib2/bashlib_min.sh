@@ -3,7 +3,7 @@
 function  Main()
 {
     local  subCommand="$1"
-    if [ "${subCommand}" == ""  -o  "${subCommand}" == "setup" ]; then
+    if [ "${subCommand}" == "" ] || [ "${subCommand}" == "setup" ]; then
         SetUp  "$@"
     elif [ "${subCommand}" == "clean" ]; then
         Clean  "$@"
