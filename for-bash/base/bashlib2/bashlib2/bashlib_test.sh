@@ -117,12 +117,12 @@ function  ErrorIfLastIs() {
     fi
 }
 
-# ExitIfMatched
-#     Check function return code or function exit code in $( )
-# Example:
-#     local  out="$(x="$( command )" && echo "$x" || echo "(ERROR:$?)" )"
-#     ExitIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
 function  ExitIfMatched() {
+    # ExitIfMatched
+    #     Check function return code or function exit code in $( )
+    # Example:
+    #     local  out="$(x="$( command )" && echo "$x" || echo "(ERROR:$?)" )"
+    #     ExitIfMatched  "${out}"  '^\(ERROR:([0-9]*)\)$'
     local  output="$1"
     local  regularExpression="$2"
 
@@ -218,8 +218,13 @@ function  Error() {
         errorMessage="ERROR"
     fi
     if [ "${exitCode}" == "" ]; then  exitCode=2  ;fi
+    if [ "${InChildProcess}" == "yes" ]; then
+        local  seeChildProcessMessage="(See above error message. The following message is usually no effective.) "
+    else
+        local  seeChildProcessMessage=""
+    fi
 
-    EchoWithBreadcrumb  "${errorMessage}"  >&2
+    EchoWithBreadcrumb  "${seeChildProcessMessage}${errorMessage}"  >&2
     if [ "${MSYSTEM}" == "MINGW64" ]; then
         echo  "[Advice] Git bash is flaky on Windows. Install WSL2 and input the command: wsl __CommadAndParameters__"
     fi
