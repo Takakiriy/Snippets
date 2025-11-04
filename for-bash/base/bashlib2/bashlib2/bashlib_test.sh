@@ -184,8 +184,8 @@ function  EchoEndOfTest() {
 }
 
 function  TestError() {
-    local  errorMessage="$1"
-    local  dateTime="$2"  #// optional
+    local  errorMessage="${1-""}"  #// "${1-""}" means that "$1" default is "".
+    local  dateTime="${2-""}"      #// "${1-""}" means that "$1" default is "".
     if [ "${errorMessage}" == "" ]; then
         errorMessage="ERROR: a test error"
     fi
@@ -212,8 +212,8 @@ function  Error() {
 
 #// full version
 function  Error() {
-    local  errorMessage="$1"
-    local  exitCode="$2"
+    local  errorMessage="${1-""}"  #// "${1-""}" means that "$1" default is "".
+    local  exitCode="${2-""}"      #// "${1-""}" means that "$1" default is "".
     if [ "${errorMessage}" == "" ]; then
         errorMessage="ERROR"
     fi
@@ -224,12 +224,14 @@ function  Error() {
         local  seeChildProcessMessage=""
     fi
 
-    EchoWithBreadcrumb  "${seeChildProcessMessage}${errorMessage}"  >&2
+    EchoWithBreadcrumb  "${seeChildProcessMessage}${Red}${errorMessage}${DefaultColor}"  >&2
     if [ "${MSYSTEM}" == "MINGW64" ]; then
         echo  "[Advice] Git bash is flaky on Windows. Install WSL2 and input the command: wsl __CommadAndParameters__"
     fi
     exit  "${exitCode}"
 }
+DefaultColor="\e[0m"
+Red="\e[91m"
 
 export  True=0  #// 0 is same as the specifiation of Linux bash "test" command
 export  False=1  #// Not 0 is same as the specifiation of Linux bash "test" command
