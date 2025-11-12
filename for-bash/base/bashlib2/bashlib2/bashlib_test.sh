@@ -204,6 +204,18 @@ function  IgnoreError() {
     return 0
 }
 
+function  PrintCallStack() {
+    echo  "Call stack:"  >&2
+    local  index=0
+    while frame=($( caller "${index}" )); do
+        local  functionName="${frame[1]}"
+        local  fileName="${frame[2]}"
+        local  lineNum="${frame[0]}"
+        echo  "    ${functionName} (${fileName}:${lineNum})"  >&2
+        (( index ++ ))
+    done
+}
+
 #// simple version
 function  Error() {
     echo  "$1"  >&2
@@ -223,6 +235,8 @@ function  Error() {
     else
         local  seeChildProcessMessage=""
     fi
+
+    PrintCallStack
 
     EchoWithBreadcrumb  "${seeChildProcessMessage}${Red}${errorMessage}${DefaultColor}"  >&2
     if [ "${MSYSTEM}" == "MINGW64" ]; then
