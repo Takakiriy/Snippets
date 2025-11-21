@@ -207,13 +207,22 @@ function  IgnoreError() {
 function  PrintCallStack() {
     echo  "Call stack:"  >&2
     local  index=0
-    while frame=($( caller "${index}" )); do
+    local  frame
+    while frame=( $( caller "${index}" ) ); do
         local  functionName="${frame[1]}"
         local  fileName="${frame[2]}"
         local  lineNum="${frame[0]}"
         echo  "    ${functionName} (${fileName}:${lineNum})"  >&2
         (( index ++ ))
     done
+}
+
+function  GetCodePosition() {
+    local  parent="${1-"0"}"  #// "${1-"0"}" means that "$1" default is "0".
+    local  frame=( $( caller "${parent}" ) )
+    local  fileName="${frame[2]}"
+    local  lineNum="${frame[0]}"
+    echo  "${fileName}:${lineNum}"
 }
 
 #// simple version
