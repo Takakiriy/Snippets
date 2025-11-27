@@ -213,7 +213,7 @@ function  PrintCallStack() {
         local  fileName="${frame[2]}"
         local  lineNum="${frame[0]}"
         echo  "    ${functionName} (${fileName}:${lineNum})"  >&2
-        (( index ++ ))
+        (( index += 1 ))  ||  true
     done
 }
 
