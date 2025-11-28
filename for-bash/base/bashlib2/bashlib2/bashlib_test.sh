@@ -101,12 +101,12 @@ function  LastIs() {
     [ "${last}" == "${tag}" ]
 }
 
-# ErrorIfLastIs
-#     Check command exit code or function return code in $( )
-# Example:
-#     variable="$( command  ||  echo "(ERROR)" )"
-#     ErrorIfLastIs  "${variable}"  "(ERROR)"
 function  ErrorIfLastIs() {
+    # ErrorIfLastIs
+    #     Check command exit code or function return code in $( )
+    # Example:
+    #     variable="$( command  ||  echo "(ERROR)" )"
+    #     ErrorIfLastIs  "${variable}"  "(ERROR)"
     local  output="$1"
     local  tag="$2"
 
