@@ -204,6 +204,8 @@ function  IgnoreError() {
     return 0
 }
 
+#section: Debug
+
 function  PrintCallStack() {
     echo  "Call stack:"  >&2
     local  index=0
@@ -224,6 +226,8 @@ function  GetCodePosition() {
     local  lineNum="${frame[0]}"
     echo  "${fileName}:${lineNum}"
 }
+
+#section: Error
 
 #// simple version
 function  Error() {
