@@ -1,6 +1,6 @@
 ## コマンド
 
-### Windows でフォルダーを開く <!-- if __Os__ == "windows" -->
+### Windows でフォルダーを開く<!-- if __Os__ == "windows" -->
 
 <!-- if __UseProxy__ == "yes" -->
 > 注意: ここは範囲の条件の中です。
